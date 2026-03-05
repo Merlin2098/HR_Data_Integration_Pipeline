@@ -19,11 +19,15 @@ Fecha: 27.01.2026
 import polars as pl
 import openpyxl
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import sys
 import json
 from tkinter import Tk, filedialog
+
+
+DATE_COLUMNS = {"FECHA ING", "F. RENOVACION"}
+EMPTY_DNI_BREAK_THRESHOLD = 1000
 
 
 def get_resource_path(relative_path: str) -> Path:
@@ -122,9 +126,32 @@ def limpiar_nombre_columna(nombre: str) -> str:
     return nombre_limpio
 
 
+def normalizar_valor_celda(valor, columna: str) -> str | None:
+    """
+    Normaliza valores leídos desde Excel a tipos estables antes
+    de construir el DataFrame.
+    """
+    if valor is None:
+        return None
+
+    if columna in DATE_COLUMNS:
+        return convertir_fecha_excel(valor)
+
+    if isinstance(valor, datetime):
+        return valor.strftime("%Y-%m-%d %H:%M:%S")
+
+    if isinstance(valor, float):
+        if valor.is_integer():
+            return str(int(valor))
+        return format(valor, "f").rstrip("0").rstrip(".")
+
+    return str(valor).strip()
+
+
 def leer_hoja_practicantes(
     ruta_archivo: Path,
-    esquema: dict
+    esquema: dict,
+    raise_on_error: bool = False
 ) -> pl.DataFrame | None:
     """
     Lee la hoja 'Practicantes' del archivo Excel.
@@ -138,13 +165,18 @@ def leer_hoja_practicantes(
         DataFrame con los datos procesados o None si hay error
     """
     print(f"\n   → Procesando hoja: Practicantes")
+
+    def abortar(mensaje: str) -> None:
+        print(f"   ✗ {mensaje}")
+        if raise_on_error:
+            raise ValueError(mensaje)
     
     try:
         wb = openpyxl.load_workbook(ruta_archivo, read_only=True, data_only=True)
         
         if "Practicantes" not in wb.sheetnames:
-            print(f"   ✗ Hoja 'Practicantes' no encontrada")
             wb.close()
+            abortar("Hoja 'Practicantes' no encontrada")
             return None
         
         ws = wb["Practicantes"]
@@ -156,8 +188,8 @@ def leer_hoja_practicantes(
         headers = [limpiar_nombre_columna(h) for h in headers_raw if h is not None]
         
         if not headers:
-            print(f"   ✗ No se encontraron headers válidos")
             wb.close()
+            abortar("No se encontraron headers válidos en la fila 4 de la hoja 'Practicantes'")
             return None
         
         print(f"   ✓ Headers encontrados: {len(headers)}")
@@ -176,16 +208,18 @@ def leer_hoja_practicantes(
         # Verificar que todas las columnas objetivo estén presentes
         columnas_faltantes = set(columnas_objetivo) - set(indices_objetivo.keys())
         if columnas_faltantes:
-            print(f"   ✗ Columnas faltantes: {columnas_faltantes}")
             wb.close()
+            columnas_str = ", ".join(sorted(columnas_faltantes))
+            abortar(f"Columnas requeridas no encontradas en 'Practicantes': {columnas_str}")
             return None
         
         print(f"   ✓ Todas las columnas objetivo encontradas")
         
         # Leer datos desde fila 5 en adelante
-        datos = []
+        datos = {col_nombre: [] for col_nombre in columnas_objetivo}
         filas_procesadas = 0
         filas_filtradas = 0
+        consecutivas_sin_dni = 0
         
         for fila in ws.iter_rows(min_row=5, values_only=True):
             # FILTRO DE SEGURIDAD: DNI no puede ser nulo/vacío
@@ -193,22 +227,34 @@ def leer_hoja_practicantes(
             
             if idx_dni == -1 or idx_dni >= len(fila):
                 filas_filtradas += 1
+                if filas_procesadas > 0:
+                    consecutivas_sin_dni += 1
                 continue
                 
             dni_valor = fila[idx_dni]
             
             if dni_valor is None or str(dni_valor).strip() == "":
                 filas_filtradas += 1
+
+                if filas_procesadas > 0:
+                    consecutivas_sin_dni += 1
+                    if consecutivas_sin_dni >= EMPTY_DNI_BREAK_THRESHOLD:
+                        print(
+                            "   ⚠️  Se detectó un bloque largo de filas sin DNI; "
+                            "se asume fin de datos reales"
+                        )
+                        break
+
                 continue
-            
+
+            consecutivas_sin_dni = 0
+
             # Extraer solo columnas objetivo en el orden definido
-            fila_filtrada = []
             for col_nombre in columnas_objetivo:
                 idx = indices_objetivo.get(col_nombre)
                 valor = fila[idx] if idx is not None and idx < len(fila) else None
-                fila_filtrada.append(valor)
-            
-            datos.append(fila_filtrada)
+                datos[col_nombre].append(normalizar_valor_celda(valor, col_nombre))
+
             filas_procesadas += 1
         
         wb.close()
@@ -216,12 +262,15 @@ def leer_hoja_practicantes(
         if filas_filtradas > 0:
             print(f"   ⚠️  Filas filtradas por DNI vacío: {filas_filtradas}")
         
-        if not datos:
-            print(f"   ✗ No se encontraron datos válidos")
+        if filas_procesadas == 0:
+            abortar(
+                "No se encontraron filas válidas en 'Practicantes' "
+                "después de filtrar registros sin DNI"
+            )
             return None
         
-        # Crear DataFrame con columnas objetivo
-        df = pl.DataFrame(datos, schema=columnas_objetivo, orient="row")
+        # Crear DataFrame con tipos estables antes de aplicar conversiones
+        df = pl.DataFrame(datos)
         
         print(f"   ✓ Filas leídas: {filas_procesadas}")
         
@@ -276,6 +325,10 @@ def leer_hoja_practicantes(
         print(f"   ✗ Error al leer archivo: {e}")
         import traceback
         traceback.print_exc()
+        if raise_on_error:
+            raise RuntimeError(
+                f"Error al leer la hoja 'Practicantes': {e}"
+            ) from e
         return None
 
 
@@ -297,7 +350,7 @@ def convertir_fecha_excel(valor) -> str | None:
             # Excel serial date: 1 = 1900-01-01
             # Pero Excel tiene un bug con 1900 siendo año bisiesto
             base_date = datetime(1899, 12, 30)
-            fecha = base_date + pl.duration(days=int(valor))
+            fecha = base_date + timedelta(days=int(valor))
             return fecha.strftime("%Y-%m-%d")
         except:
             return None
@@ -483,10 +536,7 @@ def procesar_sin_gui(ruta_archivo: Path, carpeta_salida: Path) -> dict:
         print(f"   ✓ Esquema cargado: {ruta_esquema.name}")
         
         # Procesar hoja Practicantes
-        df = leer_hoja_practicantes(ruta_archivo, esquema)
-        
-        if df is None:
-            raise ValueError("No se pudo procesar la hoja 'Practicantes'")
+        df = leer_hoja_practicantes(ruta_archivo, esquema, raise_on_error=True)
         
         registros_procesados = len(df)
         print(f"   ✓ Registros procesados: {registros_procesados:,}")
