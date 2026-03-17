@@ -118,6 +118,13 @@ ETL_HumanResources_Dashboard/
 `-- generar_exe.py         # PyInstaller build script
 ```
 
+## Documentation
+
+Additional project documentation lives under `docs/`.
+
+- [Project documentation](docs/README.md)
+- [Architecture Decision Records](docs/adr/README.md)
+
 ## How It Works
 
 1. A user opens the desktop application.
