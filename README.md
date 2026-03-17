@@ -1,232 +1,187 @@
-# ETL_KPIS_AdministracionPersonal
+# HR ETL Manager
 
 [![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
 
-Sistema ETL integral para procesamiento y consolidación de datos de Administración de Personal, desarrollado 100% en Python con arquitectura de capas Bronze → Silver → Gold y almacenamiento OLAP basado en Parquet.
+Desktop ETL application for human resources analytics, built in Python with a modular Bronze -> Silver -> Gold architecture, schema validation, SQL-based transformations, and analytics-ready Parquet outputs for downstream Power BI reporting.
 
-## 📋 Descripción
+## Overview
 
-Este proyecto resuelve la problemática de integrar múltiples fuentes de datos heterogéneas (nóminas, declaraciones tributarias, bases de datos de empleados, exámenes médicos) en un único reporte de Power BI estable y mantenible.
+This project centralizes multiple HR data sources into a stable and maintainable analytics workflow. Instead of relying on fragile spreadsheet logic and complex Power Query / DAX transformations, the application moves data preparation into reproducible ETL pipelines with clear contracts and versioned outputs.
 
-**Problema resuelto**: Anteriormente, el procesamiento mediante Power Query y DAX era frágil, requería rehacerse constantemente y tomaba aproximadamente 1 semana de trabajo en cada actualización. Esta solución automatiza el proceso completo mediante pipelines ETL robustos con validación de esquemas y transformaciones SQL.
+The repository demonstrates practical data engineering skills that are valuable in international roles:
 
-**Usuarios finales**:
+- Designing layered data pipelines for analytical consumption
+- Standardizing heterogeneous Excel-based business inputs
+- Enforcing data quality with JSON contracts and schema validation
+- Using DuckDB and Polars for local, high-performance transformations
+- Delivering business-facing tooling through a desktop UI, not only scripts
+- Packaging the solution as a standalone executable for non-technical users
 
-- **Ejecución**: Analistas y Coordinadores del área de negocio
-- **Consumo**: Gerencia a través de dashboards de Power BI
+## Business Problem
 
-## ✨ Características Principales
+HR reporting depended on multiple disconnected files such as payroll spreadsheets, employee master data, tax declarations, internship tracking, medical retirement exams, and leave records. The previous reporting flow was difficult to maintain and required repeated manual rework whenever source files changed.
 
-- **5 Pipelines ETL completos**: BD (Base de Datos Empleados), Nómina, Nómina Régimen Minero, PDT (Declaraciones Tributarias), Examen de Retiro
-- **Arquitectura de capas**: Bronze (raw) → Silver (limpio) → Gold (analytics-ready)
-- **Validación de esquemas**: Schemas JSON para garantizar calidad de datos en capa Gold
-- **Business Rules Engine**: Generación de flags mediante queries SQL (alertas de edad de jubilación, duración de contratos, etc.)
-- **Dual Output Format**: Parquet para procesamiento OLAP + Excel para revisión humana
-- **Path Caching**: Sistema de caché en JSON para facilitar navegación de carpetas frecuentes
-- **Interfaz gráfica amigable**: GUI tipo menú ERP desarrollada en PySide6
-- **Versionamiento dual**: Archivos actuales en `/actual` y timestamped en `/historico` para auditoría
+This solution automates the ingestion, consolidation, validation, enrichment, and export of those datasets into stable outputs that can be consumed by Power BI and reviewed by business users in Excel.
 
-## 🛠️ Stack Tecnológico
+## Key Capabilities
 
-- **Python 3.13+**
-- **Polars**: Manipulación de datos de alto rendimiento
-- **DuckDB**: Motor SQL serverless para transformaciones complejas
-- **PySide6**: Interfaz gráfica de usuario
-- **Openpyxl**: Lectura/escritura de archivos Excel
-- **Pydantic**: Validación de datos
-- **PyInstaller**: Empaquetado de ejecutable standalone
+- Modular ETL manager built with PySide6 and a multi-tab desktop interface
+- 6 ETL modules discovered dynamically at runtime
+- Bronze -> Silver -> Gold data processing pattern
+- JSON-based source contracts for preflight validation
+- JSON schemas for analytics-layer validation
+- SQL transformation layer powered by DuckDB
+- High-performance dataframe processing with Polars
+- Dual output strategy: Parquet for analytics and Excel for business review
+- Historical versioning plus stable `actual/` outputs for reporting tools
+- PyInstaller build script for Windows executable distribution
 
-## 📦 Requisitos del Sistema
+## Available Pipelines
 
-- **Sistema Operativo**: Windows
-- **Python**: 3.13 o superior
-- **Permisos**: Nivel usuario estándar (no requiere privilegios administrativos)
+The application currently includes the following ETL domains:
 
-## 🚀 Instalación
+- Employee master data
+- Standard payroll
+- Mining payroll regime
+- Tax declaration / income relationship data
+- Internship control
+- Retirement medical exam processing
 
-1. Descargar el archivo ZIP del proyecto desde GitHub
-2. Descomprimir en la ubicación deseada
-3. Ejecutar el archivo `.exe` incluido
+In addition, the project contains orchestrated YAML pipelines for:
 
-**No se requiere instalación de Python ni dependencias** - el ejecutable es standalone y contiene todo lo necesario.
+- Payroll + leave enrichment
+- Internship control with business flags
 
-### Instalación para Desarrollo
+## Architecture
 
-Si deseas modificar el código fuente:
+### Bronze
+
+- Ingests source Excel files
+- Preserves raw structure as the starting point
+- Applies preflight checks for expected sheets, headers, filename rules, and required columns
+
+### Silver
+
+- Consolidates multiple source files
+- Normalizes types and column structures
+- Produces cleaned Parquet datasets
+
+### Gold
+
+- Applies business transformations and joins
+- Enforces schema validation
+- Generates analytics-ready datasets and business flags
+- Exports both stable and historical outputs
+
+## Data Quality and Validation
+
+One of the strongest engineering aspects of this project is its validation layer.
+
+Before transformations run, each ETL can validate inputs against contracts stored in `assets/validate_source/`. These checks include:
+
+- Required worksheets
+- Header starting position
+- Required source columns
+- Filename regex rules when needed
+
+At the analytics stage, JSON schemas in `assets/esquemas/` help verify that Gold outputs match the expected structure. This makes the pipelines more resilient to business-side format changes and reduces the risk of silent reporting errors.
+
+## Technology Stack
+
+- Python 3.13+
+- Polars
+- DuckDB
+- PySide6
+- OpenPyXL
+- PyArrow
+- Pydantic
+- JSON Schema
+- PyYAML
+- PyInstaller
+
+## Repository Structure
+
+```text
+ETL_HumanResources_Dashboard/
+|-- assets/
+|   |-- config/            # UI theme, icon, app resources
+|   |-- esquemas/          # JSON schemas for output validation
+|   |-- queries/           # SQL transformations and business rules
+|   `-- validate_source/   # Source validation contracts
+|-- src/
+|   |-- modules/           # Domain-specific ETL modules
+|   |-- orchestrators/     # YAML-driven pipeline orchestration
+|   `-- utils/             # Shared utilities, validation, paths, UI helpers
+|-- etl_manager.py         # Desktop app entry point
+`-- generar_exe.py         # PyInstaller build script
+```
+
+## How It Works
+
+1. A user opens the desktop application.
+2. The app discovers enabled ETL modules dynamically.
+3. The user selects the relevant source files or folders.
+4. The ETL validates the source structure before processing.
+5. The pipeline writes Silver and Gold outputs to organized folders.
+6. Power BI consumes stable Parquet outputs, while Excel exports support manual review.
+
+## Local Setup for Development
 
 ```bash
-# Clonar el repositorio
 git clone https://github.com/Merlin2098/ETL_HumanResources_Dashboard
-cd ETL_KPIS_AdministracionPersonal
+cd ETL_HumanResources_Dashboard
 
-# Crear entorno virtual
 python -m venv .venv
 .venv\Scripts\activate
 
-# Instalar dependencias
 pip install -r requirements.txt
-
-# Configurar pre-commit hooks
 pre-commit install
 ```
 
-## 📁 Estructura del Proyecto
+## Run the Application
 
-```
-ETL_KPIS_AdministracionPersonal/
-├── bd/                          # ETL Base de Datos de Empleados
-├── nomina/                      # ETL Nóminas estándar
-├── nomina_regimen_minero/       # ETL Nóminas régimen minero
-├── pdt/                         # ETL Declaraciones tributarias
-├── examen_retiro/               # ETL Exámenes médicos
-├── esquemas/                    # Schemas JSON para validación
-├── queries/                     # Queries SQL para transformaciones
-├── ui/                          # Interfaz gráfica (PySide6)
-│   ├── etls/                    # Módulos ETL por tipo
-│   ├── widgets/                 # Componentes UI reutilizables
-│   └── workers/                 # Workers para procesamiento async
-├── utils/                       # Utilidades comunes
-└── config/                      # Configuración y temas
+```bash
+python etl_manager.py
 ```
 
-## 💻 Uso
-
-### Ejecución de la Aplicación
-
-1. Doble clic en el ejecutable `.exe`
-2. La aplicación se abre con un menú tipo ERP mostrando las 5 pestañas ETL
-3. Seleccionar la pestaña correspondiente al tipo de datos a procesar
-4. Usar el explorador de archivos para seleccionar la carpeta o archivos fuente
-5. Hacer clic en "Procesar"
-6. Los resultados se guardan automáticamente en las carpetas de salida
-
-### Flujo de Trabajo Típico
-
-```
-1. Usuario actualiza archivos Excel fuente
-2. Ejecuta la aplicación
-3. Procesa cada ETL desde su pestaña correspondiente
-4. Ingresa a Power BI
-5. Actualiza el dashboard (los paths son estables)
-```
-
-### Organización de Archivos Fuente
-
-**Recomendación**: Cada tipo de fuente debe estar en su propia carpeta para evitar sobrescrituras entre ETLs.
-
-```
-Mis_Datos/
-├── BD_Empleados/           # Archivos de base de datos
-├── Nominas/                # Planillas de nómina estándar
-├── Nominas_Minero/         # Planillas régimen minero
-├── PDT/                    # Declaraciones tributarias
-└── Examenes/               # Reportes de exámenes médicos
-```
-
-## 🏗️ Arquitectura de Capas
-
-### Bronze (Raw)
-
-- Conversión de Excel a Parquet
-- Limpieza inicial de filas y columnas vacías
-- Preservación de datos originales
-
-### Silver (Cleaned)
-
-- Consolidación de múltiples archivos fuente
-- Normalización de tipos de datos
-- Estandarización de formatos
-
-### Gold (Analytics-Ready)
-
-- Validación contra schemas JSON
-- Aplicación de transformaciones SQL (joins, agregaciones)
-- Generación de flags de negocio
-- **Output dual**:
-  - **Parquet** → `/actual/` y `/historico/` (para Power BI)
-  - **Excel** → Revisión y validación humana
-
-### Versionamiento Dual
-
-- **`/actual/`**: Archivos sin timestamp con path estable para Power BI
-- **`/historico/`**: Archivos timestamped para auditoría y control de cambios
-
-## 🔧 Configuración Interna
-
-El proyecto incluye configuraciones pre-establecidas:
-
-- **Schemas JSON** (`/esquemas/`): Definen estructura esperada de datos Gold
-- **Source Contracts JSON** (`/validate_source/`): Definen validación Preflight de archivos Bronze (hojas, encabezados, columnas, regex)
-- **Queries SQL** (`/queries/`): Transformaciones complejas y generación de flags
-- **Temas UI** (`/config/`): Personalización de interfaz gráfica
-- **Path Cache**: Almacena rutas frecuentes en JSON para agilizar navegación
-
-No se requiere configuración de variables de entorno ni archivos externos.
-
-## ✅ Preflight / Validate Source
-
-Antes de ejecutar transformaciones, cada ETL valida sus fuentes de entrada contra contratos JSON en `assets/validate_source/`.
-
-- Módulo reutilizable: `src/utils/validate_source.py`
-- Funciones principales:
-  - `load_validation_contract(etl_name)`
-  - `validate_excel_source(path, contract, required_cols=None)`
-  - `validate_all_sources_for_etl(etl_name, inputs)`
-
-Reglas validadas por contrato:
-
-- Hojas requeridas
-- Posición de encabezado (`row_index_1_based`, `column_letter`)
-- Columnas requeridas (derivadas de `assets/esquemas`)
-- Regex de nombre de archivo (cuando aplique)
-
-Si una validación falla, el ETL se detiene inmediatamente con mensaje claro en UI/log.
-
-### Cómo agregar un nuevo contrato
-
-1. Crear `assets/validate_source/<etl_id>.json`.
-2. Definir `sheet_rules` y `sheets.<sheet>.header_start`.
-3. Definir `required_columns_source` apuntando a `assets/esquemas/...`.
-4. En el worker del ETL, llamar `validate_all_sources_for_etl("<etl_id>", inputs)` antes de Step 1.
-
-## 🔒 Consideraciones de Seguridad
-
-Por motivos de confidencialidad:
-
-- ❌ No se incluyen archivos fuente de datos reales
-- ❌ No se comparte el dashboard de Power BI
-- ✅ El código está disponible para demostrar arquitectura y mejores prácticas
-
-**Objetivo del repositorio**: Mostrar arquitectura profesional de ETL local con:
-
-- Python puro
-- Parquet como base OLAP
-- Configuración JSON
-- Queries SQL serverless (DuckDB)
-
-## 📝 Generación de Ejecutable
-
-Para generar el ejecutable standalone:
+## Build the Executable
 
 ```bash
 python generar_exe.py
 ```
 
-Esto crea un `.exe` empaquetado con PyInstaller que incluye:
+The build script packages the application, static assets, validation contracts, and pipeline definitions into a Windows-ready distribution folder.
 
-- Runtime de Python
-- Todas las dependencias
-- Recursos estáticos (iconos, temas, schemas)
-- Utilidades de path resolution
+## Why This Project Matters for Data Engineering
 
-## 🤝 Contribución
+This repository is not only a desktop utility. It is a practical example of end-to-end data engineering in a business environment:
 
-Este es un proyecto privado de Metso. Para consultas o colaboración:
+- Batch ingestion from messy operational files
+- Contract-based validation for reliability
+- Transformation logic separated from reporting logic
+- Analytics-ready storage in Parquet
+- Reusable ETL module design
+- Business-facing delivery through a deployable application
 
-**LinkedIn**: [Ricardo Uculmana Quispe](https://pe.linkedin.com/in/ricardouculmanaquispe)
+It reflects the kind of work often required in small and mid-sized organizations where data engineers must bridge raw files, business operations, and decision-support dashboards without relying on a large cloud platform.
 
-## 📄 Licencia
+## Confidentiality Note
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+For privacy and corporate confidentiality reasons, this repository does not include:
+
+- Real HR source files
+- Sensitive employee data
+- The final Power BI dashboard
+
+The codebase is shared to demonstrate the solution architecture, engineering approach, and implementation patterns.
+
+## Author
+
+Ricardo Uculmana Quispe  
+LinkedIn: [ricardouculmanaquispe](https://pe.linkedin.com/in/ricardouculmanaquispe)
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
