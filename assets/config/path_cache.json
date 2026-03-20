@@ -1,13 +1,13 @@
 {
   "last_paths": {
-    "nomina_carpeta": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Analisis de nómina\\prueba",
-    "nomina_regimen_minero_carpeta": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Contratista minero",
-    "pdt_archivo": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Movimientos\\Ingresos pdt\\Relación de ingresos 2024-2026.xlsx",
-    "examen_retiro_cc_actual": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\centros de costo\\CC_ACTUAL.parquet",
-    "bd_bronze": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\Prueba\\BD. 06.01.2026..xlsm",
-    "examen_retiro_cc_old": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\centros de costo\\OLD\\CC_OLD.parquet",
-    "control_practicantes_archivo": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Control_Practicantes\\LISTA DE CONTRATOS Y PRACTICANTES - CONTROL3.xlsx",
-    "examen_retiro_bronze": "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\examen_retiro\\Programación de examen de Retiro3.xlsm"
+    "nomina_carpeta": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Analisis de nómina",
+    "control_practicantes_archivo": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Control_Practicantes\\LISTA DE CONTRATOS Y PRACTICANTES - CONTROL.xlsx",
+    "nomina_regimen_minero_carpeta": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Contratista minero",
+    "pdt_archivo": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Movimientos\\Ingresos pdt\\Relación de ingresos 2024-2026.xlsx",
+    "bd_bronze": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Base de datos\\BD historica\\BD. 04.03.2026..xlsm",
+    "examen_retiro_bronze": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Examen de retiro (ceses)\\Programación de examen de Retiro3.xlsm",
+    "examen_retiro_cc_actual": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Base de datos\\BD historica\\centros_costo\\actual\\CC_ACTUAL.parquet",
+    "examen_retiro_cc_old": "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Base de datos\\BD historica\\centros_costo\\OLD\\CC_OLD.parquet"
   },
   "frequent_dirs": {
     "nomina_bronze_dir": [
@@ -15,29 +15,35 @@
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\VS Code\\12. Reportabilidad"
     ],
     "pdt_archivo": [
+      "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Movimientos\\Ingresos pdt",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Movimientos\\Ingresos pdt"
     ],
     "examen_retiro_bronze": [
+      "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Examen de retiro (ceses)",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\examen_retiro",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Analisis de nómina\\motivo_cese"
     ],
     "examen_retiro_cc_actual": [
+      "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Base de datos\\BD historica\\centros_costo\\actual",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\centros de costo"
     ],
     "examen_retiro_cc_old": [
+      "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Base de datos\\BD historica\\centros_costo\\OLD",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\centros de costo\\OLD",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\centros de costo"
     ],
     "bd_bronze": [
+      "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Base de datos\\BD historica",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Base de datos\\Prueba"
     ],
     "control_practicantes_archivo": [
+      "C:\\Users\\ricuculm\\Metso\\EXT Andrea Arellano - REPORTABILIDAD\\Control_Practicantes",
       "C:\\Users\\ricuculm\\OneDrive - Metso\\Documents\\Laboratorio\\2. Reportabilidad\\REPORTABILIDAD\\Control_Practicantes"
     ]
   },
   "metadata": {
     "created": "2026-01-07T12:11:25.926351",
-    "last_updated": "2026-03-10T18:09:56.916608",
+    "last_updated": "2026-03-20T12:41:40.872503",
     "version": "1.0"
   }
 }
