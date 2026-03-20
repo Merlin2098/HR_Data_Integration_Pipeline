@@ -39,20 +39,31 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# ============================================================================
-# Host Project Gitignore Template - Tinker Framework
-# ============================================================================
-# Add these entries to the HOST project's .gitignore when deploying Tinker.
-# This reflects the current portable structure where the framework lives under
-# `agents/` plus root-level bootstrap files.
-# Full Tinker framework tree
-agents/
-instructions/
-# Root-level framework bootstrap/config files
-.clinerules
+# Tinker v2 framework (portable - not part of host project)
+agents2/engine/
+agents2/runtime/
+agents2/knowledge/
+agents2/tools/
+agents2/hooks/
+agents2/instructions/
+agents2/rules.md
+.githooks/
+.gitattributes
 agent_framework_config.yaml
 AGENTS.md
 agent.md
 .pre-commit-config.yaml
-# Installer backup folder (created when using --backup)
-.tinker_backups/
+
+# Tinker v2 generated runtime state
+.tinker/active_kernels.yaml
+.tinker/architecture_metrics.yaml
+.tinker/capability_map.yaml
+.tinker/context_bundle.yaml
+.tinker/context_graph.json
+.tinker/dependencies_graph.json
+.tinker/dependencies_report.md
+.tinker/project_metadata.meta.json
+.tinker/project_metadata.yaml
+.tinker/skills_registry.json
+.tinker/treemap.md
+.tinker/generated_skill_wrappers/
