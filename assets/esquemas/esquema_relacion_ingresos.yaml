@@ -1,0 +1,114 @@
+metadata:
+  version: '3.0'
+  capa: gold
+  fecha_creacion: '2025-01-06'
+  fecha_actualizacion: '2026-01-30'
+  descripcion: Esquema de datos para Relación de Ingresos - Solo EMPLEADOS va a Gold
+hojas:
+  EMPLEADOS:
+    descripcion: Datos de empleados para análisis en Power BI
+    schema:
+      PERIODO:
+        type: string
+        nullable: false
+        pattern: ^\d{4}-\d{2}$
+        description: Periodo en formato YYYY-MM (generado desde AÑO-MES)
+      AÑO:
+        type: integer
+        nullable: false
+        min_value: 2020
+        description: Año del registro
+      MES:
+        type: integer
+        nullable: false
+        min_value: 1
+        max_value: 12
+        description: Mes del registro
+      DNI:
+        type: string
+        nullable: false
+        description: Documento Nacional de Identidad
+      N° DOCUM.:
+        type: string
+        nullable: false
+        description: Número de documento (puede incluir CEX)
+      FECHA NACIMIENTO:
+        type: date
+        nullable: true
+        description: Fecha de nacimiento del empleado
+      SEXO:
+        type: string
+        nullable: true
+        allowed_values:
+        - M
+        - F
+        description: Sexo del empleado
+      DEPARTAMENTO:
+        type: string
+        nullable: true
+        description: Departamento de residencia
+      PROVINCIA:
+        type: string
+        nullable: true
+        description: Provincia de residencia
+      DISTRITO:
+        type: string
+        nullable: true
+        description: Distrito de residencia
+      CARGO:
+        type: string
+        nullable: true
+        description: Cargo del empleado
+      ÁREA:
+        type: string
+        nullable: true
+        description: Área de trabajo del empleado
+      LUGAR DE TRABAJO:
+        type: string
+        nullable: true
+        description: Ubicación física del lugar de trabajo
+      FECHA INICIO:
+        type: date
+        nullable: true
+        description: Fecha de inicio en la empresa o proyecto
+      WC/BC:
+        type: string
+        nullable: true
+        description: Work Center / Business Center
+      Tiempo de contrato:
+        type: string
+        nullable: true
+        description: Duración o tipo de contrato
+      SERVICIO:
+        type: string
+        nullable: false
+        description: Servicio asignado (null/vacío se imputa con 'Personal_Interno')
+      REGIMEN:
+        type: string
+        nullable: false
+        description: Régimen de trabajo (null/vacío se imputa con 'Personal_Interno')
+    constraints:
+      primary_key:
+      - PERIODO
+      - DNI
+      unique_keys: []
+      business_rules:
+      - PERIODO debe ser calculado como AÑO-MES en formato YYYY-MM
+      - SERVICIO con valor null o vacío debe imputarse con 'Personal_Interno'
+      - REGIMEN con valor null o vacío debe imputarse con 'Personal_Interno'
+    transformations:
+      column_naming: original
+      date_format: YYYY-MM-DD
+      string_trimming: true
+      null_handling: explicit
+  PRACTICANTES:
+    descripcion: Datos de practicantes - SE MANTIENE SOLO EN SILVER
+    nota: Esta hoja no se procesa a Gold. Los archivos Silver se usan para consultas internas.
+    ruta_silver: silver/Relacion Ingresos PRACTICANTES.parquet
+notas_generales:
+  arquitectura: Bronze → Silver → Gold (solo EMPLEADOS)
+  power_bi: Conectar a gold/Relacion Ingresos EMPLEADOS Gold.parquet
+  actualizacion: Los archivos Silver y Gold se sobreescriben sin timestamp para mantener rutas estables
+  limpieza_datos:
+  - 'Bronze → Silver: Se aplican reglas de limpieza básicas'
+  - 'Silver → Gold: Se seleccionan columnas, se aplica tipado según esquema y se imputan SERVICIO/REGIMEN'

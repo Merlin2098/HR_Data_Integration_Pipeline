@@ -1,0 +1,163 @@
+metadata:
+  version: '2.3'
+  capa: gold
+  fecha_creacion: '2025-12-29'
+  fecha_actualizacion: '2025-01-05'
+  descripcion: Esquema de datos para la capa gold - nombres originales del parquet silver - Actualizado con MOTIVO CESE
+schema:
+  PERIODO:
+    type: string
+    nullable: false
+    description: Periodo de la planilla en formato YYYY-MM
+  AÑO:
+    type: string
+    nullable: false
+    description: Año del periodo
+  MES:
+    type: integer
+    nullable: false
+    min_value: 1
+    max_value: 12
+    description: Mes del periodo
+  CÓDIGO CORPORATIVO:
+    type: string
+    nullable: true
+    description: Código corporativo del empleado
+  APELLIDO PATERNO:
+    type: string
+    nullable: false
+    description: Apellido paterno del empleado
+  APELLIDO MATERNO:
+    type: string
+    nullable: true
+    description: Apellido materno del empleado
+  NOMBRES:
+    type: string
+    nullable: false
+    description: Nombres del empleado
+  TIPO DE DOCUMENTO:
+    type: string
+    nullable: false
+    description: Tipo de documento de identidad
+  DNI/CEX:
+    type: string
+    nullable: false
+    description: Número de documento de identidad
+  SEXO:
+    type: string
+    nullable: true
+    allowed_values:
+    - M
+    - F
+    description: Sexo del empleado
+  F. NACIMIENTO:
+    type: date
+    nullable: true
+    description: Fecha de nacimiento del empleado
+  ÁREA:
+    type: string
+    nullable: true
+    description: Área de trabajo
+  CENTRO DE COSTOS:
+    type: string
+    nullable: true
+    description: Centro de costos asignado
+  FECHA DE INGRESO:
+    type: date
+    nullable: true
+    description: Fecha de ingreso a la empresa
+  FECHA CESE:
+    type: date
+    nullable: true
+    description: Fecha de cese laboral
+  MOTIVO CESE:
+    type: string
+    nullable: true
+    description: Motivo del cese laboral del empleado
+  DIAS SUBSIDIO ENFERMEDAD:
+    type: integer
+    nullable: true
+    min_value: 0
+    description: Días de subsidio por enfermedad
+  DIAS GOCE HABER(D):
+    type: integer
+    nullable: true
+    min_value: 0
+    description: Días con goce de haber
+  '# HRS EXTRAS SIMP.25%':
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas extras simples al 25%
+  '# HRS EXTRAS SIMP.35%':
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas extras simples al 35%
+  '#HRS EXTRAS DOBLES':
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas extras dobles
+  '#HRS SIMP.50%':
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas simples al 50%
+  HRS SIMPLES AL 50%:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Horas simples trabajadas con recargo del 50%
+  HORAS EXTRAS 25%:
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas extras al 25%
+  HORAS EXTRAS 35%:
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas extras al 35%
+  HORAS EXTRAS 100%:
+    type: float
+    nullable: true
+    min_value: 0
+    description: Horas extras al 100%
+  LICENCIA GOCE HABER:
+    type: float
+    nullable: true
+    min_value: 0
+    description: Licencia con goce de haber
+  DIAS DIST.LIC.S.GH:
+    type: integer
+    nullable: true
+    min_value: 0
+    description: Días distintos de licencia sin goce de haber
+  SUBS. POR ENFERMEDAD:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Monto del subsidio por enfermedad
+  SUBS. POR ACCIDENTE:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Monto del subsidio por accidente
+constraints:
+  primary_key:
+  - PERIODO
+  - DNI/CEX
+  unique_keys: []
+  business_rules:
+  - FECHA CESE debe ser posterior a FECHA DE INGRESO si ambas existen
+  - Si FECHA CESE existe, el empleado esta inactivo
+  - MOTIVO CESE solo debe tener valor si FECHA CESE existe
+transformations:
+  column_naming: original
+  date_format: YYYY-MM-DD
+  string_trimming: true
+  null_handling: explicit

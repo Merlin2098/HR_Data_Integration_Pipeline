@@ -22,23 +22,9 @@ from pathlib import Path
 from datetime import datetime
 import time
 import sys
-import json
 from tkinter import Tk, filedialog
 
-
-def get_resource_path(relative_path: str) -> Path:
-    """
-    Obtiene la ruta absoluta de un recurso, manejando tanto
-    ejecución standalone como PyInstaller.
-    """
-    try:
-        # PyInstaller crea una carpeta temporal _MEIPASS
-        base_path = Path(sys._MEIPASS)
-    except AttributeError:
-        # Ejecución normal desde el directorio del script
-        base_path = Path(__file__).resolve().parents[4]
-
-    return base_path / relative_path
+from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
 def seleccionar_archivo_excel() -> Path | None:
@@ -58,10 +44,9 @@ def seleccionar_archivo_excel() -> Path | None:
 
 
 def cargar_esquema(ruta_esquema: Path) -> dict:
-    """Carga el esquema JSON de validación."""
+    """Carga el esquema de validación YAML."""
     try:
-        with open(ruta_esquema, "r", encoding="utf-8") as f:
-            return json.load(f)
+        return load_structured_data(ruta_esquema, prefer_resource_path=False)
     except Exception as e:
         print(f"   ✗ Error al cargar esquema: {e}")
         raise
@@ -223,7 +208,7 @@ def leer_hoja_excel(
         
         print(f"   ✓ Filas leídas: {filas_procesadas}")
         
-        # MAPEO DE COLUMNAS: Leer desde esquema JSON
+        # MAPEO DE COLUMNAS: Leer desde esquema de configuración
         mapeo_columnas = esquema.get("column_mapping", {})
         
         # Aplicar renombrado de columnas si existen
@@ -338,7 +323,7 @@ def main():
     print(f"\n[1/2] Cargando esquema de validación...")
     
     try:
-        ruta_esquema = get_resource_path("assets/esquemas/esquema_licencias.json")
+        ruta_esquema = resolve_structured_path("assets/esquemas/esquema_licencias")
         esquema = cargar_esquema(ruta_esquema)
         print(f"   ✓ Esquema cargado: {ruta_esquema.name}")
     except Exception as e:
@@ -458,7 +443,7 @@ def procesar_sin_gui(ruta_archivo: Path, carpeta_salida: Path) -> dict:
     
     try:
         # Cargar esquema
-        ruta_esquema = get_resource_path("assets/esquemas/esquema_licencias.json")
+        ruta_esquema = resolve_structured_path("assets/esquemas/esquema_licencias")
         esquema = cargar_esquema(ruta_esquema)
         
         # Procesar ambas hojas

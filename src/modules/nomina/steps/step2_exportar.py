@@ -6,12 +6,18 @@ REFACTORIZADO para compatibilidad con worker UI y estructura simplificada
 """
 
 import polars as pl
-import json
 from pathlib import Path
 from datetime import datetime
 import traceback
 import os
 import time
+
+from src.utils.structured_config import (
+    list_structured_files,
+    load_structured_data,
+    resolve_structured_path,
+    structured_filetypes,
+)
 
 
 def aplicar_transformaciones_gold(df, schema):
@@ -289,7 +295,7 @@ def seleccionar_y_convertir_columnas(df_silver, esquema):
     
     Args:
         df_silver: DataFrame de la capa silver
-        esquema: Diccionario con el esquema gold cargado desde JSON
+        esquema: Diccionario con el esquema gold cargado desde YAML
         
     Returns:
         pl.DataFrame: DataFrame transformado a gold
@@ -416,15 +422,12 @@ def exportar_a_gold(ruta_parquet_silver: Path, carpeta_trabajo: Path) -> dict:
     
     try:
         # 1. Cargar esquema
-        from src.utils.paths import get_resource_path
-        esquema_path = get_resource_path("assets/esquemas/esquema_nominas.json")
+        esquema_path = resolve_structured_path("assets/esquemas/esquema_nominas")
         
         if not esquema_path.exists():
             raise FileNotFoundError(f"Esquema no encontrado: {esquema_path}")
         
-        import json
-        with open(esquema_path, 'r', encoding='utf-8') as f:
-            esquema = json.load(f)
+        esquema = load_structured_data(esquema_path, prefer_resource_path=False)
         
         print(f"   ✓ Esquema cargado: v{esquema['metadata']['version']}")
         
@@ -519,15 +522,15 @@ def main():
             carpeta_esquemas.mkdir(exist_ok=True)
             print(f"✓ Carpeta creada: {carpeta_esquemas}")
             print()
-            print("❌ Por favor, coloca los archivos JSON de esquemas en esta carpeta y ejecuta nuevamente.")
+            print("❌ Por favor, coloca los archivos de esquema (.yaml/.yml) en esta carpeta y ejecuta nuevamente.")
             return
-    
-    # Listar archivos JSON en la carpeta de esquemas
-    esquemas_disponibles = list(carpeta_esquemas.glob("*.json"))
-    
+
+    # Listar archivos de esquema en la carpeta de esquemas
+    esquemas_disponibles = list_structured_files(carpeta_esquemas)
+
     if not esquemas_disponibles:
-        print(f"❌ No se encontraron archivos JSON en: {carpeta_esquemas}")
-        print(f"   Por favor, coloca los archivos de esquemas (.json) en esta carpeta.")
+        print(f"❌ No se encontraron archivos de esquema en: {carpeta_esquemas}")
+        print(f"   Por favor, coloca los archivos de esquemas (.yaml/.yml) en esta carpeta.")
         return
     
     print(f"📁 Carpeta de esquemas: {carpeta_esquemas}")
@@ -536,25 +539,25 @@ def main():
         print(f"   {i}. {esquema.name}")
     print()
     
-    # Seleccionar schema JSON de la carpeta de esquemas
-    print("🔍 Seleccione el archivo JSON del esquema Gold...")
+    # Seleccionar schema YAML de la carpeta de esquemas
+    print("🔍 Seleccione el archivo del esquema Gold (YAML)...")
     
     root = Tk()
     root.withdraw()
     root.attributes('-topmost', True)
     
     ruta_schema = filedialog.askopenfilename(
-        title="Seleccione el esquema JSON Gold",
+        title="Seleccione el esquema Gold (YAML)",
         initialdir=str(carpeta_esquemas),
-        filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        filetypes=structured_filetypes()
     )
     root.destroy()
     
     if not ruta_schema:
-        print("❌ No se seleccionó archivo schema. Operación cancelada.")
+        print("❌ No se seleccionó archivo de esquema. Operación cancelada.")
         return
     
-    print(f"✓ Schema seleccionado: {Path(ruta_schema).name}")
+    print(f"✓ Esquema seleccionado: {Path(ruta_schema).name}")
     print()
     
     # Cargar datos
@@ -565,8 +568,7 @@ def main():
     
     # Cargar schema
     print("\n📋 Cargando esquema gold...")
-    with open(ruta_schema, 'r', encoding='utf-8') as f:
-        schema = json.load(f)
+    schema = load_structured_data(ruta_schema, prefer_resource_path=False)
     print(f"✓ Schema versión {schema['metadata']['version']} cargado")
     print(f"✓ Columnas esperadas: {len(schema['schema'])}")
     

@@ -38,13 +38,13 @@ ARCHIVOS_REQUERIDOS = [
 ]
 
 CONTRATOS_PREVALIDACION = [
-    "assets/validate_source/nomina.json",
-    "assets/validate_source/licencias.json",
-    "assets/validate_source/bd.json",
-    "assets/validate_source/regimen_minero.json",
-    "assets/validate_source/control_practicantes.json",
-    "assets/validate_source/ingresos.json",
-    "assets/validate_source/examen_retiro.json",
+    "assets/validate_source/nomina.yaml",
+    "assets/validate_source/licencias.yaml",
+    "assets/validate_source/bd.yaml",
+    "assets/validate_source/regimen_minero.yaml",
+    "assets/validate_source/control_practicantes.yaml",
+    "assets/validate_source/ingresos.yaml",
+    "assets/validate_source/examen_retiro.yaml",
 ]
 
 

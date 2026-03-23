@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import Dict
 import sys
 import time
-from src.utils.paths import get_resource_path
 from src.utils.validate_source import SourceValidationError, validate_all_sources_for_etl
+from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 # Asegurar que el directorio raíz del proyecto esté en el path
 project_root = Path(__file__).resolve().parents[4]
@@ -224,10 +224,7 @@ class PDTWorker(BaseETLWorker):
             
             try:
                 # Buscar y cargar esquema
-                from src.utils.paths import get_resource_path
-                import json
-                
-                esquema_path = get_resource_path("assets/esquemas/esquema_relacion_ingresos.json")
+                esquema_path = resolve_structured_path("assets/esquemas/esquema_relacion_ingresos")
                 
                 self.logger.info(f"Buscando esquema en: {esquema_path}")
                 
@@ -236,8 +233,7 @@ class PDTWorker(BaseETLWorker):
                 
                 self.progress_updated.emit(55, "📋 Cargando esquema EMPLEADOS...")
                 
-                with open(esquema_path, 'r', encoding='utf-8') as f:
-                    esquema_completo = json.load(f)
+                esquema_completo = load_structured_data(esquema_path, prefer_resource_path=False)
                 
                 if 'hojas' not in esquema_completo or 'EMPLEADOS' not in esquema_completo['hojas']:
                     raise ValueError("Esquema no contiene configuración para EMPLEADOS")
@@ -370,10 +366,7 @@ class PDTWorker(BaseETLWorker):
             
             try:
                 # Buscar y cargar esquema
-                from src.utils.paths import get_resource_path
-                import json
-                
-                esquema_path = get_resource_path("assets/esquemas/esquema_ingresos_practicantes.json")
+                esquema_path = resolve_structured_path("assets/esquemas/esquema_ingresos_practicantes")
                 
                 self.logger.info(f"Buscando esquema en: {esquema_path}")
                 
@@ -382,8 +375,7 @@ class PDTWorker(BaseETLWorker):
                 
                 self.progress_updated.emit(84, "📋 Cargando esquema PRACTICANTES...")
                 
-                with open(esquema_path, 'r', encoding='utf-8') as f:
-                    esquema_completo = json.load(f)
+                esquema_completo = load_structured_data(esquema_path, prefer_resource_path=False)
                 
                 if 'hojas' not in esquema_completo or 'PRACTICANTES' not in esquema_completo['hojas']:
                     raise ValueError("Esquema no contiene configuración para PRACTICANTES")

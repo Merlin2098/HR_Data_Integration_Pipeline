@@ -20,10 +20,15 @@ Actualizado: 08.01.2026 - Sistema de versionado dual
 """
 
 import polars as pl
-import json
 from pathlib import Path
 from datetime import datetime
 from tkinter import Tk, filedialog
+
+from src.utils.structured_config import (
+    find_first_structured_path,
+    load_structured_data,
+    structured_filetypes,
+)
 
 
 def seleccionar_archivo(titulo: str, tipos: list) -> Path:
@@ -54,36 +59,31 @@ def seleccionar_archivo(titulo: str, tipos: list) -> Path:
     return Path(archivo)
 
 
-def buscar_esquema_json() -> Path | None:
-    """Busca el archivo esquema_cc.json en ubicaciones comunes"""
+def buscar_esquema() -> Path | None:
+    """Busca el archivo de esquema YAML en ubicaciones comunes."""
     rutas_posibles = [
-        Path("../assets/esquemas/esquema_cc.json"),
-        Path("assets/esquemas/esquema_cc.json"),
-        Path("../../assets/esquemas/esquema_cc.json"),
-        Path("esquema_cc.json"),
+        Path("../assets/esquemas/esquema_cc"),
+        Path("assets/esquemas/esquema_cc"),
+        Path("../../assets/esquemas/esquema_cc"),
+        Path("esquema_cc"),
     ]
     
-    for ruta in rutas_posibles:
-        if ruta.exists():
-            return ruta
-    
-    return None
+    return find_first_structured_path(rutas_posibles, prefer_resource_path=False)
 
 
 def cargar_esquema(ruta_esquema: Path) -> dict:
     """
-    Carga el esquema JSON de centros de costo.
+    Carga el esquema YAML de centros de costo.
     
     Args:
-        ruta_esquema: Path al archivo JSON del esquema
+        ruta_esquema: Path al archivo del esquema
     
     Returns:
         Diccionario con la configuración del esquema
     """
     print(f"\n📋 Cargando esquema: {ruta_esquema.name}")
     
-    with open(ruta_esquema, 'r', encoding='utf-8') as f:
-        esquema = json.load(f)
+    esquema = load_structured_data(ruta_esquema, prefer_resource_path=False)
     
     print(f"  ✓ Esquema cargado correctamente")
     print(f"  ✓ Columnas requeridas: {len(esquema['columnas_requeridas'])}")
@@ -238,17 +238,17 @@ def main():
     inicio = datetime.now()
     
     try:
-        # 1. Buscar esquema JSON
-        print("\n[1/3] Carga de Esquema JSON")
-        ruta_esquema = buscar_esquema_json()
+        # 1. Buscar esquema YAML
+        print("\n[1/3] Carga de Esquema YAML")
+        ruta_esquema = buscar_esquema()
         
         if not ruta_esquema:
-            print("⚠️ No se encontró el esquema JSON automáticamente.")
+            print("⚠️ No se encontró el esquema automáticamente.")
             print("   Buscando manualmente...")
             
             ruta_esquema = seleccionar_archivo(
-                titulo="Seleccionar esquema JSON - Centros de Costo",
-                tipos=[("JSON files", "*.json"), ("All files", "*.*")]
+                titulo="Seleccionar esquema - Centros de Costo (YAML)",
+                tipos=structured_filetypes()
             )
         
         esquema = cargar_esquema(ruta_esquema)

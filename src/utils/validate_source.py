@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import json
 from pathlib import Path
 import re
 from typing import Any
 
-from src.utils.paths import get_resource_path
+from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
 EXCEL_EXTENSIONS = {".xlsx", ".xlsm", ".xls"}
@@ -50,11 +49,10 @@ class ValidationReport:
 
 def load_validation_contract(etl_name: str) -> dict[str, Any]:
     """Loads a source validation contract by ETL/contract id."""
-    path = get_resource_path(f"assets/validate_source/{etl_name}.json")
+    path = resolve_structured_path(f"assets/validate_source/{etl_name}")
     if not path.exists():
         raise FileNotFoundError(f"Validation contract not found: {path}")
-    with open(path, "r", encoding="utf-8") as f:
-        contract = json.load(f)
+    contract = load_structured_data(path)
 
     if "id" not in contract:
         contract["id"] = etl_name
@@ -234,9 +232,8 @@ def _resolve_required_columns(sheet_cfg: dict[str, Any]) -> list[str]:
     if not schema_path or not extract_mode:
         return []
 
-    schema_file = get_resource_path(str(schema_path))
-    with open(schema_file, "r", encoding="utf-8") as f:
-        schema_json = json.load(f)
+    schema_file = resolve_structured_path(str(schema_path))
+    schema_json = load_structured_data(schema_file)
 
     columns = _extract_columns_from_schema(schema_json, extract_mode, source_cfg)
 

@@ -1,0 +1,65 @@
+metadata:
+  version: '2.0'
+  descripcion: Reglas de negocio para generación de flags en capa Gold
+  fecha_creacion: '2025-12-30'
+  fecha_actualizacion: '2025-12-30'
+  autor: Richi - Data Engineering Pipeline
+  nota: Las fechas de referencia se calculan dinámicamente según el año de ejecución del script
+reglas_edad:
+  edad_65:
+    edad_objetivo: 65
+    descripcion: Edad de jubilación estándar en Perú
+    alertas:
+      cumple_este_año:
+        columna_resultado: cumple_65_esteaño
+        mensaje: Cumple 65 años durante el año actual
+      cumple_proximo_año:
+        columna_resultado: cumple_65_proximoaño
+        mensaje: Cumplirá 65 años durante el próximo año
+  edad_70:
+    edad_objetivo: 70
+    descripcion: Edad de jubilación extendida
+    alertas:
+      cumple_este_año:
+        columna_resultado: cumple_70_esteaño
+        mensaje: Cumple 70 años durante el año actual
+      cumple_proximo_año:
+        columna_resultado: cumple_70_proximoaño
+        mensaje: Cumplirá 70 años durante el próximo año
+reglas_contrato:
+- modalidad: CONTRATO POR OBRA O SERVICIO ESPECIFICO
+  tiempo_maximo_años: 5.0
+  alerta_desde_años: 4.5
+  alerta_desde_meses: 54
+  columna_resultado: alerta_contrato_obra
+  descripcion: Contratos de obra con límite de 5 años según normativa laboral peruana
+  activo: true
+- modalidad: CONTRATO POR INCREMENTO DE ACTIVIDAD
+  tiempo_maximo_años: 3.0
+  alerta_desde_años: 2.5
+  alerta_desde_meses: 30
+  columna_resultado: alerta_contrato_incremento
+  descripcion: Contratos de incremento con límite de 3 años según normativa laboral
+  activo: true
+contratos_excluidos:
+- modalidad: PLAZO INDETERMINADO
+  razon: No tiene límite temporal por naturaleza del contrato
+  aplica_alertas_edad: true
+  aplica_alertas_contrato: false
+- modalidad: CONTRATO EXTRANJERO
+  razon: Requiere definición de reglas específicas según jurisdicción
+  aplica_alertas_edad: true
+  aplica_alertas_contrato: false
+- modalidad: TERMINO DE CONVENIO
+  razon: Modalidad para practicantes con reglas distintas
+  aplica_alertas_edad: true
+  aplica_alertas_contrato: false
+notas_tecnicas:
+  fecha_termino_nula: Si 'Fecha de Termino' es null, se usa fecha actual para calcular antigüedad
+  calculo_tiempo_servicio: Se calcula en días y se convierte a años decimales (días/365.25)
+  flags_booleanas: Todas las flags son booleanas (True/False)
+  orden_aplicacion:
+  - 1. Validar existencia de columnas requeridas
+  - 2. Calcular flags de edad (independientes de modalidad)
+  - 3. Calcular tiempo de servicio
+  - 4. Aplicar flags de contrato según modalidad

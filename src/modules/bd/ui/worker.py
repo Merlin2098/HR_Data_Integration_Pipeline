@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Dict
 import sys
 import time
-import json
 import re
 from datetime import datetime
 
@@ -25,6 +24,7 @@ sys.path.insert(0, str(project_root))
 
 from src.utils.ui.workers.base_worker import BaseETLWorker
 from src.utils.validate_source import validate_all_sources_for_etl
+from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
 class BDWorker(BaseETLWorker):
@@ -298,14 +298,12 @@ class BDWorker(BaseETLWorker):
         
         # Cargar esquema de CC
         self.logger.info("📋 Cargando esquema de Centros de Costo...")
-        ruta_esquema = self._buscar_esquema('esquema_cc.json')
+        ruta_esquema = self._buscar_esquema('esquema_cc')
         
         if not ruta_esquema:
-            raise FileNotFoundError("No se encontró esquema_cc.json")
+            raise FileNotFoundError("No se encontró el esquema de centros de costo")
         
-        import json
-        with open(ruta_esquema, 'r', encoding='utf-8') as f:
-            esquema = json.load(f)
+        esquema = load_structured_data(ruta_esquema, prefer_resource_path=False)
         
         columnas_requeridas = esquema['columnas_requeridas']
         columna_dedupe = esquema['columna_deduplicacion']
@@ -393,14 +391,12 @@ class BDWorker(BaseETLWorker):
         
         # Cargar esquema
         self.logger.info("📋 Cargando esquema de validación...")
-        ruta_esquema = self._buscar_esquema('esquema_bd.json')
+        ruta_esquema = self._buscar_esquema('esquema_bd')
         
         if not ruta_esquema:
-            raise FileNotFoundError("No se encontró esquema_bd.json")
+            raise FileNotFoundError("No se encontró el esquema BD")
         
-        import json
-        with open(ruta_esquema, 'r', encoding='utf-8') as f:
-            esquema = json.load(f)
+        esquema = load_structured_data(ruta_esquema, prefer_resource_path=False)
         
         self.logger.info(f"  ✓ Esquema: {esquema['schema_name']} v{esquema['version']}")
         
@@ -652,11 +648,8 @@ class BDWorker(BaseETLWorker):
     # ========================================================================
     
     def _buscar_esquema(self, nombre_archivo):
-        """Busca archivo de esquema usando get_resource_path (compatible con PyInstaller)"""
-        from src.utils.paths import get_resource_path
-        
-        # Usar get_resource_path que maneja correctamente dev y PyInstaller
-        ruta_esquema = get_resource_path(f"assets/esquemas/{nombre_archivo}")
+        """Busca archivo de esquema YAML usando resolución estructurada."""
+        ruta_esquema = resolve_structured_path(f"assets/esquemas/{nombre_archivo}")
         
         if ruta_esquema.exists():
             return ruta_esquema

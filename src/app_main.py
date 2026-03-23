@@ -20,6 +20,7 @@ from PySide6.QtGui import QFont, QIcon
 from src.utils.ui.theme_loader import load_theme
 from src.utils.ui.etl_registry import get_registry
 from src.utils.paths import get_resource_path
+from src.utils.structured_config import resolve_structured_path
 
 
 class ETLManagerWindow(QMainWindow):
@@ -195,10 +196,13 @@ class ETLManagerWindow(QMainWindow):
             traceback.print_exc()
     
     def _apply_theme(self):
-        """Aplica tema desde JSON."""
+        """Aplica tema desde configuración estructurada."""
         try:
-            # ✅ Usar helper de paths para desarrollo y producción
+            # Mantener JSON como formato canónico del tema.
             theme_path = get_resource_path("assets/config/theme_light.json")
+
+            if not theme_path.exists():
+                theme_path = resolve_structured_path("assets/config/theme_light")
             
             if not theme_path.exists():
                 print(f"⚠️ Tema no encontrado en: {theme_path}")

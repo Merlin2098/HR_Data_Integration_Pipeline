@@ -21,6 +21,7 @@ sys.path.insert(0, str(project_root))
 from src.utils.ui.workers.base_worker import BaseETLWorker
 from src.utils.lazy_loader import create_etl_loader
 from src.utils.validate_source import SourceValidationError, validate_all_sources_for_etl
+from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
 class NominaRegimenMineroWorker(BaseETLWorker):
@@ -166,9 +167,7 @@ class NominaRegimenMineroWorker(BaseETLWorker):
             tiempo_inicio_step2 = time.time()
             
             try:
-                # Buscar esquema usando get_resource_path (compatible con PyInstaller)
-                from src.utils.paths import get_resource_path
-                esquema_path = get_resource_path("assets/esquemas/esquema_regimen_minero.json")
+                esquema_path = resolve_structured_path("assets/esquemas/esquema_regimen_minero")
                 
                 if not esquema_path.exists():
                     self.logger.warning("⚠️ Esquema no encontrado, saltando Step 2")
@@ -178,10 +177,8 @@ class NominaRegimenMineroWorker(BaseETLWorker):
                 else:
                     self.logger.info(f"✓ Esquema encontrado: {esquema_path.name}")
                     
-                    # Cargar esquema
-                    import json
-                    with open(esquema_path, 'r', encoding='utf-8') as f:
-                        esquema = json.load(f)
+                    # Cargar esquema YAML
+                    esquema = load_structured_data(esquema_path, prefer_resource_path=False)
                     
                     self.logger.info(f"✓ Esquema cargado: v{esquema['metadata']['version']}")
                     self.logger.info(f"  • Columnas esperadas: {len(esquema['schema'])}")

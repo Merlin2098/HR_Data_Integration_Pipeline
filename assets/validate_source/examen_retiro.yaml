@@ -1,0 +1,28 @@
+id: examen_retiro
+name: Examen Retiro Bronze
+file_type:
+  expected_extensions:
+  - .xlsx
+  - .xlsm
+  - .xls
+sheet_rules:
+  required_sheets:
+  - DATA
+  allowed_sheets:
+  - DATA
+  enforce_allowed_sheets: false
+sheets:
+  DATA:
+    header_start:
+      row_index_1_based: 3
+      column_letter: A
+    required_columns_source:
+      schema_path: assets/esquemas/esquema_examen_retiro.yaml
+      extract: schema_non_nullable
+      exclude_columns:
+      - AÑO
+      - MES
+      required_columns:
+      - NOMBRE
+      - DNI
+      - FECHA DE CESE

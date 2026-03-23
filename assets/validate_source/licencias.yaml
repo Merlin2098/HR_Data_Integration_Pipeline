@@ -1,0 +1,42 @@
+id: licencias
+name: Licencias Bronze
+file_type:
+  expected_extensions:
+  - .xlsx
+  - .xlsm
+  - .xls
+sheet_rules:
+  required_sheets:
+  - LICENCIA CON GOCE
+  - LICENCIA SIN GOCE
+  allowed_sheets:
+  - LICENCIA CON GOCE
+  - LICENCIA SIN GOCE
+  enforce_allowed_sheets: false
+sheets:
+  LICENCIA CON GOCE:
+    header_start:
+      row_index_1_based: 2
+      column_letter: A
+    required_columns_source:
+      schema_path: assets/esquemas/esquema_licencias.yaml
+      required_columns:
+      - PERIODO
+      - DNI/CEX
+      - APELLIDO PATERNO
+      - APELLIDO MATERNO
+      - NOMBRES
+      - MOTIVO DE LIC.CON GOCE
+  LICENCIA SIN GOCE:
+    header_start:
+      row_index_1_based: 2
+      column_letter: A
+    required_columns_source:
+      schema_path: assets/esquemas/esquema_licencias.yaml
+      required_columns:
+      - PERIODO
+      - DNI/CEX
+      - APELLIDO PATERNO
+      - APELLIDO MATERNO
+      - NOMBRES
+      - MOTIVO DE LIC.S.G.H

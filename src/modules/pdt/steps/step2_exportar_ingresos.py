@@ -7,7 +7,7 @@ Descripción: Transforma datos de EMPLEADOS de la capa Silver a Gold
              
 Proceso:
     1. Lee silver/Relacion Ingresos EMPLEADOS.parquet
-    2. Aplica esquema JSON (selección de columnas y tipado)
+    2. Aplica esquema YAML (selección de columnas y tipado)
     3. Genera métricas de calidad
     4. Guarda en gold/ sin timestamp
 
@@ -16,32 +16,32 @@ Fecha: 06.01.2025
 """
 
 import polars as pl
-import json
 from pathlib import Path
 from datetime import datetime
 from tkinter import Tk, filedialog
 import sys
 import time
 
+from src.utils.structured_config import (
+    find_first_structured_path,
+    load_structured_data,
+    structured_filetypes,
+)
+
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
 
-def buscar_esquema_json() -> Path | None:
-    """Busca el archivo de esquema JSON en ubicaciones comunes"""
-    # Desde queries/step2_exportar_ingresos.py, buscar en esquemas/
+def buscar_esquema() -> Path | None:
+    """Busca el archivo de esquema YAML en ubicaciones comunes."""
     rutas_posibles = [
-        Path("../assets/esquemas/esquema_relacion_ingresos.json"),  # Desde queries/ hacia esquemas/
-        Path("assets/esquemas/esquema_relacion_ingresos.json"),      # Si se ejecuta desde raíz
-        Path("../../assets/esquemas/esquema_relacion_ingresos.json"), # Si hay más niveles
-        Path("esquema_relacion_ingresos.json"),               # En el mismo directorio
+        Path("../assets/esquemas/esquema_relacion_ingresos"),
+        Path("assets/esquemas/esquema_relacion_ingresos"),
+        Path("../../assets/esquemas/esquema_relacion_ingresos"),
+        Path("esquema_relacion_ingresos"),
     ]
     
-    for ruta in rutas_posibles:
-        if ruta.exists():
-            return ruta
-    
-    return None
+    return find_first_structured_path(rutas_posibles, prefer_resource_path=False)
 
 # ============================================================================
 # FUNCIONES AUXILIARES
@@ -64,11 +64,10 @@ def seleccionar_archivo_parquet() -> Path | None:
 
 
 def cargar_esquema(ruta_esquema: Path) -> dict:
-    """Carga el esquema JSON y extrae configuración de EMPLEADOS"""
+    """Carga el esquema YAML y extrae configuración de EMPLEADOS."""
     print(f"📋 Cargando esquema: {ruta_esquema.name}")
     
-    with open(ruta_esquema, 'r', encoding='utf-8') as f:
-        esquema_completo = json.load(f)
+    esquema_completo = load_structured_data(ruta_esquema, prefer_resource_path=False)
     
     # Extraer solo la configuración de EMPLEADOS
     if 'hojas' not in esquema_completo or 'EMPLEADOS' not in esquema_completo['hojas']:
@@ -246,11 +245,11 @@ def main():
     # Iniciar cronómetro
     tiempo_inicio = time.time()
     
-    # 1. Buscar esquema JSON
-    ruta_esquema = buscar_esquema_json()
+    # 1. Buscar esquema YAML
+    ruta_esquema = buscar_esquema()
     
     if not ruta_esquema:
-        print("⚠️  No se encontró el esquema JSON automáticamente.")
+        print("⚠️  No se encontró el esquema automáticamente.")
         print("   Buscando manualmente...")
         
         root = Tk()
@@ -258,8 +257,8 @@ def main():
         root.attributes('-topmost', True)
         
         ruta_esquema = filedialog.askopenfilename(
-            title="Seleccionar esquema JSON",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            title="Seleccionar esquema (YAML)",
+            filetypes=structured_filetypes()
         )
         
         root.destroy()

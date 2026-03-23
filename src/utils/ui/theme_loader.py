@@ -1,11 +1,14 @@
 # src/utils/ui/theme_loader.py
-import json
 from pathlib import Path
+
 from src.utils.paths import get_resource_path
+from src.utils.structured_config import load_structured_data, resolve_structured_path
+
 
 def load_theme(theme_filename: str = "theme_light.json") -> str:
     """
-    Carga stylesheet desde archivo JSON.
+    Carga stylesheet del tema, manteniendo JSON como formato canónico
+    para `theme_light` y dejando compatibilidad estructurada como fallback.
     
     Args:
         theme_filename: Nombre del archivo (ej: 'theme_light.json')
@@ -19,21 +22,30 @@ def load_theme(theme_filename: str = "theme_light.json") -> str:
         relative_path = Path("assets/config") / theme_filename
     else:
         relative_path = Path(theme_filename)
-    
-    # Resolver ruta absoluta compatible con EXE
-    full_path = get_resource_path(relative_path)
+
+    # Si se pide un archivo exacto, respetarlo antes del fallback estructurado.
+    exact_candidates: list[Path] = []
+    if relative_path.is_absolute():
+        exact_candidates.append(relative_path)
+    else:
+        exact_candidates.append(get_resource_path(relative_path.as_posix()))
+        exact_candidates.append(relative_path)
+
+    full_path = next((candidate for candidate in exact_candidates if candidate.exists()), None)
+
+    if full_path is None:
+        full_path = resolve_structured_path(relative_path)
     
     if not full_path.exists():
         # Fallback: intentar buscar en raíz si falló config/
-        full_path_root = get_resource_path(theme_filename)
+        full_path_root = resolve_structured_path(theme_filename)
         if full_path_root.exists():
             full_path = full_path_root
         else:
             raise FileNotFoundError(f"Tema no encontrado en: {full_path}")
     
     try:
-        with open(full_path, 'r', encoding='utf-8') as f:
-            theme_data = json.load(f)
+        theme_data = load_structured_data(full_path)
         return theme_data['pyqt5']['stylesheet']
     except Exception as e:
         print(f"Error cargando tema: {e}")

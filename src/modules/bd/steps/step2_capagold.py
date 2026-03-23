@@ -1,7 +1,7 @@
 """
 Script: step2_capagold.py
 Descripción: Transforma datos de BD de Silver a Gold
-             - Valida columnas según esquema JSON
+             - Valida columnas según esquema YAML
              - Divide en Empleados y Practicantes
              - Convierte tipos de datos
              
@@ -18,11 +18,16 @@ Fecha: 06.01.2025
 """
 
 import polars as pl
-import json
 from pathlib import Path
 from datetime import datetime
 import time
 from tkinter import Tk, filedialog
+
+from src.utils.structured_config import (
+    find_first_structured_path,
+    load_structured_data,
+    structured_filetypes,
+)
 
 
 def seleccionar_archivo_parquet() -> Path | None:
@@ -41,36 +46,31 @@ def seleccionar_archivo_parquet() -> Path | None:
     return Path(archivo) if archivo else None
 
 
-def buscar_esquema_json() -> Path | None:
-    """Busca el archivo esquema_bd.json en ubicaciones comunes"""
+def buscar_esquema() -> Path | None:
+    """Busca el archivo de esquema YAML en ubicaciones comunes."""
     rutas_posibles = [
-        Path("../assets/esquemas/esquema_bd.json"),
-        Path("assets/esquemas/esquema_bd.json"),
-        Path("../../assets/esquemas/esquema_bd.json"),
-        Path("esquema_bd.json"),
+        Path("../assets/esquemas/esquema_bd"),
+        Path("assets/esquemas/esquema_bd"),
+        Path("../../assets/esquemas/esquema_bd"),
+        Path("esquema_bd"),
     ]
     
-    for ruta in rutas_posibles:
-        if ruta.exists():
-            return ruta
-    
-    return None
+    return find_first_structured_path(rutas_posibles, prefer_resource_path=False)
 
 
 def cargar_esquema(ruta_esquema: Path) -> dict:
     """
-    Carga el esquema JSON que define las columnas para la capa Gold
+    Carga el esquema YAML que define las columnas para la capa Gold
     
     Args:
-        ruta_esquema: Path al archivo JSON del esquema
+        ruta_esquema: Path al archivo del esquema
         
     Returns:
         dict con el esquema completo
     """
     print(f"📋 Cargando esquema: {ruta_esquema.name}")
     
-    with open(ruta_esquema, 'r', encoding='utf-8') as f:
-        esquema = json.load(f)
+    esquema = load_structured_data(ruta_esquema, prefer_resource_path=False)
     
     print(f"  ✓ Esquema: {esquema['schema_name']} v{esquema['version']}")
     print(f"  ✓ Columnas esperadas: {len(esquema['columns'])}")
@@ -301,11 +301,11 @@ def main():
     # Iniciar cronómetro
     tiempo_inicio = time.time()
     
-    # 1. Buscar esquema JSON
-    ruta_esquema = buscar_esquema_json()
+    # 1. Buscar esquema YAML
+    ruta_esquema = buscar_esquema()
     
     if not ruta_esquema:
-        print("\n⚠️  No se encontró el esquema JSON automáticamente.")
+        print("\n⚠️  No se encontró el esquema automáticamente.")
         print("   Buscando manualmente...")
         
         root = Tk()
@@ -313,8 +313,8 @@ def main():
         root.attributes('-topmost', True)
         
         ruta_esquema = filedialog.askopenfilename(
-            title="Seleccionar esquema JSON",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+            title="Seleccionar esquema (YAML)",
+            filetypes=structured_filetypes()
         )
         
         root.destroy()

@@ -1,0 +1,216 @@
+metadata:
+  version: '1.6'
+  capa: gold
+  fecha_creacion: '2025-01-06'
+  fecha_actualizacion: '2026-03-20'
+  descripcion: Esquema de datos para la capa gold - Régimen Minero - columnas base del parquet silver (sin columnas enriquecidas).
+    Incluye horas extras simples y montos de horas extra
+schema:
+  PERIODO:
+    type: string
+    nullable: false
+    description: Periodo de la planilla en formato YYYY-MM
+  MES:
+    type: integer
+    nullable: false
+    min_value: 1
+    max_value: 12
+    description: Mes del periodo (1-12)
+  AÑO:
+    type: string
+    nullable: false
+    description: Año del periodo
+  CÓDIGO CORPORATIVO:
+    type: string
+    nullable: true
+    description: Código corporativo del empleado
+  DNI/CEX:
+    type: string
+    nullable: false
+    description: Número de documento de identidad
+  SEXO:
+    type: string
+    nullable: true
+    allowed_values:
+    - M
+    - F
+    description: Sexo del empleado
+  F. NACIMIENTO:
+    type: date
+    nullable: true
+    description: Fecha de nacimiento del empleado
+  PUESTO:
+    type: string
+    nullable: true
+    description: Puesto o cargo del empleado
+  SEDE:
+    type: string
+    nullable: true
+    description: Sede o ubicación del empleado
+  ÁREA:
+    type: string
+    nullable: true
+    description: Área de trabajo
+  CENTRO DE COSTOS:
+    type: string
+    nullable: true
+    description: Código del centro de costos asignado
+  DESC. CENTRO DE COSTO:
+    type: string
+    nullable: true
+    description: Descripción del centro de costo asignado
+  FECHA DE INGRESO:
+    type: date
+    nullable: true
+    description: Fecha de ingreso a la empresa
+  DIAS TRABAJADOS:
+    type: integer
+    nullable: true
+    min_value: 0
+    max_value: 31
+    description: Número de días trabajados en el periodo
+  DIAS DESC MEDICO (P):
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días de descanso médico en el periodo
+  '# HRS EXTRAS SIMP.25%':
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Número de horas extras simples al 25% en el periodo
+  '# HRS EXTRAS SIMP.35%':
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Número de horas extras simples al 35% en el periodo
+  HORAS EXTRAS 25%:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Horas extras al 25% en el periodo
+  HORAS EXTRAS 35%:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Horas extras al 35% en el periodo
+  '#HRS EXTRAS DOBLES':
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Número de horas extras dobles en el periodo
+  HORAS EXTRAS 100%:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Horas extras al 100% en el periodo
+  DESCANSO MEDICO:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días de descanso médico
+  TOTAL INGRESOS:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Total de ingresos del empleado en el periodo
+  TOTAL DESCUENTOS:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Total de descuentos aplicados en el periodo
+  TOTAL APORTACIONES:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Total de aportaciones (empleador) en el periodo
+  NETO:
+    type: float
+    nullable: true
+    precision: 2
+    description: Monto neto a pagar al empleado (ingresos - descuentos)
+constraints:
+  primary_key:
+  - PERIODO
+  - DNI/CEX
+  unique_keys: []
+  business_rules:
+  - NETO deberia ser aproximadamente igual a TOTAL INGRESOS - TOTAL DESCUENTOS
+  - DIAS TRABAJADOS debe ser mayor o igual a 0 y menor o igual a 31
+  - FECHA DE INGRESO debe ser anterior a PERIODO si ambas existen
+  - Los montos (TOTAL INGRESOS, TOTAL DESCUENTOS, TOTAL APORTACIONES, NETO) deben ser no negativos
+  - 'DIAS DESC MEDICO (P), # HRS EXTRAS SIMP.25%, # HRS EXTRAS SIMP.35%, HORAS EXTRAS 25%, HORAS EXTRAS 35%, #HRS EXTRAS DOBLES,
+    HORAS EXTRAS 100%, DESCANSO MEDICO deben ser no negativos'
+transformations:
+  column_naming: original
+  date_format: YYYY-MM-DD
+  string_trimming: true
+  null_handling: explicit
+  enrichment:
+  - NOMBRE_MES se genera automáticamente desde columna MES (agregada después de MES)
+column_order_base:
+- PERIODO
+- MES
+- AÑO
+- CÓDIGO CORPORATIVO
+- DNI/CEX
+- SEXO
+- F. NACIMIENTO
+- PUESTO
+- SEDE
+- ÁREA
+- CENTRO DE COSTOS
+- DESC. CENTRO DE COSTO
+- FECHA DE INGRESO
+- DIAS TRABAJADOS
+- DIAS DESC MEDICO (P)
+- '# HRS EXTRAS SIMP.25%'
+- '# HRS EXTRAS SIMP.35%'
+- HORAS EXTRAS 25%
+- HORAS EXTRAS 35%
+- '#HRS EXTRAS DOBLES'
+- HORAS EXTRAS 100%
+- DESCANSO MEDICO
+- TOTAL INGRESOS
+- TOTAL DESCUENTOS
+- TOTAL APORTACIONES
+- NETO
+column_order_final:
+- PERIODO
+- MES
+- NOMBRE_MES
+- AÑO
+- CÓDIGO CORPORATIVO
+- DNI/CEX
+- SEXO
+- F. NACIMIENTO
+- PUESTO
+- SEDE
+- ÁREA
+- CENTRO DE COSTOS
+- DESC. CENTRO DE COSTO
+- FECHA DE INGRESO
+- DIAS TRABAJADOS
+- DIAS DESC MEDICO (P)
+- '# HRS EXTRAS SIMP.25%'
+- '# HRS EXTRAS SIMP.35%'
+- HORAS EXTRAS 25%
+- HORAS EXTRAS 35%
+- '#HRS EXTRAS DOBLES'
+- HORAS EXTRAS 100%
+- DESCANSO MEDICO
+- TOTAL INGRESOS
+- TOTAL DESCUENTOS
+- TOTAL APORTACIONES
+- NETO

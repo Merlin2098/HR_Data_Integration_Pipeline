@@ -4,10 +4,15 @@ Guarda salida Gold únicamente en carpeta actual/
 """
 
 import polars as pl
-import json
 from pathlib import Path
 from tkinter import Tk, filedialog
 from datetime import datetime
+
+from src.utils.structured_config import (
+    list_structured_files,
+    load_structured_data,
+    structured_filetypes,
+)
 
 
 def seleccionar_archivo(titulo, tipos):
@@ -258,15 +263,15 @@ def main():
             carpeta_esquemas.mkdir(exist_ok=True)
             print(f"✓ Carpeta creada: {carpeta_esquemas}")
             print()
-            print("❌ Por favor, coloca los archivos JSON de esquemas en esta carpeta y ejecuta nuevamente.")
+            print("❌ Por favor, coloca los archivos de esquema (.yaml/.yml) en esta carpeta y ejecuta nuevamente.")
             return
-    
-    # Listar archivos JSON en la carpeta de esquemas
-    esquemas_disponibles = list(carpeta_esquemas.glob("*.json"))
-    
+
+    # Listar archivos de esquema en la carpeta de esquemas
+    esquemas_disponibles = list_structured_files(carpeta_esquemas)
+
     if not esquemas_disponibles:
-        print(f"❌ No se encontraron archivos JSON en: {carpeta_esquemas}")
-        print(f"   Por favor, coloca los archivos de esquemas (.json) en esta carpeta.")
+        print(f"❌ No se encontraron archivos de esquema en: {carpeta_esquemas}")
+        print(f"   Por favor, coloca los archivos de esquemas (.yaml/.yml) en esta carpeta.")
         return
     
     print(f"📁 Carpeta de esquemas: {carpeta_esquemas}")
@@ -275,8 +280,8 @@ def main():
         print(f"   {i}. {esquema.name}")
     print()
     
-    # Seleccionar schema JSON de la carpeta de esquemas
-    print("🔍 Seleccione el archivo JSON del esquema Gold (Régimen Minero)...")
+    # Seleccionar schema YAML de la carpeta de esquemas
+    print("🔍 Seleccione el archivo del esquema Gold (Régimen Minero)...")
     
     # Cambiar directorio inicial del diálogo a la carpeta de esquemas
     root = Tk()
@@ -284,9 +289,9 @@ def main():
     root.attributes('-topmost', True)
     
     ruta_schema = filedialog.askopenfilename(
-        title="Seleccione el esquema JSON Gold - Régimen Minero",
+        title="Seleccione el esquema Gold - Régimen Minero (YAML)",
         initialdir=str(carpeta_esquemas),
-        filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        filetypes=structured_filetypes()
     )
     root.destroy()
     
@@ -294,7 +299,7 @@ def main():
         print("❌ No se seleccionó archivo schema. Operación cancelada.")
         return
     
-    print(f"✓ Schema seleccionado: {Path(ruta_schema).name}")
+    print(f"✓ Esquema seleccionado: {Path(ruta_schema).name}")
     print()
     
     # Cargar datos
@@ -305,8 +310,7 @@ def main():
     
     # Cargar schema
     print("\n📋 Cargando esquema gold...")
-    with open(ruta_schema, 'r', encoding='utf-8') as f:
-        schema = json.load(f)
+    schema = load_structured_data(ruta_schema, prefer_resource_path=False)
     print(f"✓ Schema versión {schema['metadata']['version']} cargado")
     print(f"✓ Columnas esperadas: {len(schema['schema'])}")
     
