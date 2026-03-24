@@ -23,6 +23,7 @@ project_root = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(project_root))
 
 from src.utils.ui.workers.base_worker import BaseETLWorker
+from src.utils.bd_document_date import append_bd_document_date_column, extract_bd_document_date
 from src.utils.validate_source import validate_all_sources_for_etl
 from src.utils.structured_config import load_structured_data, resolve_structured_path
 
@@ -198,6 +199,11 @@ class BDWorker(BaseETLWorker):
         # Crear DataFrame
         self.logger.info("🔄 Creando DataFrame...")
         df = self._crear_dataframe_polars(headers, data_rows, pl)
+
+        # Agregar metadata del documento desde el filename
+        fecha_documento = extract_bd_document_date(archivo_excel)
+        df = append_bd_document_date_column(df, archivo_excel)
+        self.logger.info(f"  ✓ FECHA_DOCUMENTO detectada desde filename: {fecha_documento}")
         
         # Guardar Silver
         self.logger.info("💾 Guardando en capa Silver...")
@@ -216,7 +222,8 @@ class BDWorker(BaseETLWorker):
         return {
             'registros': len(df),
             'columnas': len(df.columns),
-            'parquet': ruta_parquet
+            'parquet': ruta_parquet,
+            'fecha_documento': fecha_documento,
         }
     
     def _extraer_datos_excel(self, archivo_excel, openpyxl):

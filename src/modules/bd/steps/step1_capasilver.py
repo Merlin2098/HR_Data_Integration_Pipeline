@@ -24,6 +24,8 @@ import time
 from tkinter import Tk, filedialog
 import re
 
+from src.utils.bd_document_date import append_bd_document_date_column, extract_bd_document_date
+
 
 def seleccionar_archivo_excel() -> Path | None:
     """Abre diálogo para seleccionar archivo Excel"""
@@ -243,6 +245,11 @@ def main():
         
         # 2.2 Crear DataFrame
         df = crear_dataframe_polars(headers, data_rows)
+
+        # 2.3 Agregar metadata del documento desde el filename
+        fecha_documento = extract_bd_document_date(archivo_bronze)
+        df = append_bd_document_date_column(df, archivo_bronze)
+        print(f"✓ FECHA_DOCUMENTO detectada desde filename: {fecha_documento}")
         
         # 3. Guardar resultados
         ruta_parquet = guardar_resultados(df, carpeta_trabajo)

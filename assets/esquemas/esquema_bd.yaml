@@ -62,3 +62,7 @@ columns:
   required: true
   description: Fecha de nacimiento del empleado
   format: YYYY-MM-DD
+- name: FECHA_DOCUMENTO
+  type: string
+  required: true
+  description: Fecha del documento fuente derivada del nombre del archivo Bronze en formato YYYY-MM-DD

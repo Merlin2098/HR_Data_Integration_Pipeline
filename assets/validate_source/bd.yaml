@@ -1,5 +1,6 @@
 id: bd
 name: BD Bronze
+filename_regex: (?i)^BD\.\s*(?P<fecha>\d{2}\.\d{2}\.\d{4})\.\.(xlsx|xlsm|xls)$
 file_type:
   expected_extensions:
   - .xlsx

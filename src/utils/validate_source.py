@@ -5,6 +5,7 @@ from pathlib import Path
 import re
 from typing import Any
 
+from src.utils.bd_document_date import extract_bd_document_date
 from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
@@ -92,8 +93,17 @@ def validate_excel_source(
         return report
 
     filename_regex = contract.get("filename_regex")
-    if filename_regex and not re.search(filename_regex, file_path.name):
-        report.add_error(file_path, f"Filename does not match regex: {filename_regex}")
+    filename_matches = True
+    if filename_regex:
+        filename_matches = bool(re.search(filename_regex, file_path.name))
+        if not filename_matches:
+            report.add_error(file_path, f"Filename does not match regex: {filename_regex}")
+
+    if str(contract.get("id", "")).strip().lower() == "bd" and filename_matches:
+        try:
+            extract_bd_document_date(file_path)
+        except ValueError as exc:
+            report.add_error(file_path, str(exc))
 
     try:
         import openpyxl
