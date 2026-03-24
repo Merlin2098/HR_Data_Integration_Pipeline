@@ -158,7 +158,7 @@ transformations:
   string_trimming: true
   null_handling: explicit
   enrichment:
-  - NOMBRE_MES se genera automáticamente desde columna MES (agregada después de MES)
+  - NOMBRE_MES se genera automáticamente desde columna MES en inglés (agregada después de MES)
 column_order_base:
 - PERIODO
 - MES

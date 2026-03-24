@@ -20,6 +20,7 @@ from typing import Dict
 import sys
 import time
 from src.utils.validate_source import SourceValidationError, validate_all_sources_for_etl
+from src.utils.month_name import add_month_name_column
 from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 # Asegurar que el directorio raíz del proyecto esté en el path
@@ -270,31 +271,7 @@ class PDTWorker(BaseETLWorker):
                 
                 self.progress_updated.emit(75, "🔄 Agregando columnas enriquecidas...")
                 
-                # Agregar columna enriquecida NOMBRE_MES
-                df_gold = df_gold.with_columns([
-                    pl.col("MES").map_elements(
-                        lambda m: {
-                            1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
-                            5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
-                            9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
-                        }.get(m, ""),
-                        return_dtype=pl.Utf8
-                    ).alias("NOMBRE_MES")
-                ])
-                
-                # Reordenar para que NOMBRE_MES esté después de MES
-                columnas_ordenadas = []
-                for col in df_gold.columns:
-                    columnas_ordenadas.append(col)
-                    if col == "MES":
-                        columnas_ordenadas.append("NOMBRE_MES")
-                
-                # Eliminar duplicado de NOMBRE_MES al final si existe
-                columnas_ordenadas = [col for i, col in enumerate(columnas_ordenadas) 
-                                    if col != "NOMBRE_MES" or columnas_ordenadas[:i].count("NOMBRE_MES") == 0 
-                                    or (i > 0 and columnas_ordenadas[i-1] == "MES")]
-                
-                df_gold = df_gold.select(columnas_ordenadas)
+                df_gold = add_month_name_column(df_gold, default_invalid="")
                 
                 self.logger.info(f"✓ Transformaciones aplicadas")
                 self.logger.info(f"  • Columna NOMBRE_MES agregada después de MES")
@@ -416,31 +393,7 @@ class PDTWorker(BaseETLWorker):
                 
                 self.progress_updated.emit(92, "🔄 Agregando columnas enriquecidas...")
                 
-                # Agregar columna enriquecida NOMBRE_MES
-                df_gold = df_gold.with_columns([
-                    pl.col("MES").map_elements(
-                        lambda m: {
-                            1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
-                            5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
-                            9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
-                        }.get(m, ""),
-                        return_dtype=pl.Utf8
-                    ).alias("NOMBRE_MES")
-                ])
-                
-                # Reordenar para que NOMBRE_MES esté después de MES
-                columnas_ordenadas = []
-                for col in df_gold.columns:
-                    columnas_ordenadas.append(col)
-                    if col == "MES":
-                        columnas_ordenadas.append("NOMBRE_MES")
-                
-                # Eliminar duplicado de NOMBRE_MES al final si existe
-                columnas_ordenadas = [col for i, col in enumerate(columnas_ordenadas) 
-                                    if col != "NOMBRE_MES" or columnas_ordenadas[:i].count("NOMBRE_MES") == 0 
-                                    or (i > 0 and columnas_ordenadas[i-1] == "MES")]
-                
-                df_gold = df_gold.select(columnas_ordenadas)
+                df_gold = add_month_name_column(df_gold, default_invalid="")
                 
                 self.logger.info(f"✓ Transformaciones aplicadas")
                 self.logger.info(f"  • Business rules aplicadas (Universidad de Procedencia)")

@@ -28,6 +28,7 @@ from src.utils.structured_config import (
     load_structured_data,
     structured_filetypes,
 )
+from src.utils.month_name import add_month_name_column
 
 
 def buscar_esquema() -> Path | None:
@@ -173,22 +174,7 @@ def transformar_silver_a_gold(df_silver: pl.DataFrame, esquema: dict) -> pl.Data
         )
         print(f"  ✓ Columna derivada generada: MES")
         
-        # NOMBRE_MES
-        meses_espanol = {
-            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
-            5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
-            9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
-        }
-        
-        df_gold = df_gold.with_columns(
-            pl.col('FECHA DE CESE').dt.month().alias('_mes_num')
-        )
-        
-        df_gold = df_gold.with_columns(
-            pl.col('_mes_num').replace(meses_espanol, default=None).alias('NOMBRE_MES')
-        )
-        
-        df_gold = df_gold.drop('_mes_num')
+        df_gold = add_month_name_column(df_gold, default_invalid=None)
         print(f"  ✓ Columna derivada generada: NOMBRE_MES")
     
     # Aplicar filtros definidos en el esquema

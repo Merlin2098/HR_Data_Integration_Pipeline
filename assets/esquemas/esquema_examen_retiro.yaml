@@ -46,7 +46,7 @@ schema:
     type: string
     nullable: true
     derivado_de: FECHA DE CESE
-    description: Nombre del mes en español (Enero, Febrero, etc.)
+    description: Nombre del mes en inglés (January, February, etc.)
 columnas_derivadas:
   AÑO:
     fuente: FECHA DE CESE
@@ -58,21 +58,21 @@ columnas_derivadas:
     tipo_resultado: integer
   NOMBRE_MES:
     fuente: FECHA DE CESE
-    operacion: dt.month() + mapeo a nombres en español
+    operacion: dt.month() + mapeo a nombres en inglés
     tipo_resultado: string
     mapeo:
-      '1': Enero
-      '2': Febrero
-      '3': Marzo
-      '4': Abril
-      '5': Mayo
-      '6': Junio
-      '7': Julio
-      '8': Agosto
-      '9': Septiembre
-      '10': Octubre
-      '11': Noviembre
-      '12': Diciembre
+      '1': January
+      '2': February
+      '3': March
+      '4': April
+      '5': May
+      '6': June
+      '7': July
+      '8': August
+      '9': September
+      '10': October
+      '11': November
+      '12': December
 filtros:
 - columna: CARGO
   condicion: NOT_EQUAL
