@@ -16,6 +16,8 @@ import sys
 import time
 import traceback
 
+from src.utils.bd_document_date import has_document_date_fragment
+
 
 class PipelineControlPracticantesExecutor(QObject):
     """
@@ -133,11 +135,10 @@ class PipelineControlPracticantesExecutor(QObject):
         
         self._log("INFO", f"✓ Archivo encontrado: {self.archivo.name}")
         
-        # Validar nombre del archivo
-        nombre_esperado = "LISTA DE CONTRATOS Y PRACTICANTES - CONTROL"
-        if nombre_esperado not in self.archivo.stem:
-            self._log("WARNING", f"⚠️  Nombre de archivo no coincide exactamente con: {nombre_esperado}")
-            self._log("WARNING", f"   Archivo actual: {self.archivo.stem}")
+        # Warning suave: solo alertar si el filename no trae fecha DD.MM.YYYY
+        if not has_document_date_fragment(self.archivo):
+            self._log("WARNING", "⚠️  El nombre del archivo no contiene una fecha con formato DD.MM.YYYY")
+            self._log("WARNING", f"   Archivo actual: {self.archivo.name}")
         
         # Validar que tenga la pestaña "Practicantes"
         try:

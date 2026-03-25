@@ -24,6 +24,10 @@ import time
 import sys
 from tkinter import Tk, filedialog
 
+from src.utils.bd_document_date import (
+    append_control_practicantes_document_date_column,
+    extract_control_practicantes_document_date,
+)
 from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
@@ -467,6 +471,10 @@ def main():
             # No detener el proceso, solo advertir
         else:
             print(f"   ✓ Esquema válido")
+
+        fecha_documento = extract_control_practicantes_document_date(archivo_bronze)
+        df = append_control_practicantes_document_date_column(df, archivo_bronze)
+        print(f"   ✓ FECHA_DOCUMENTO detectada desde filename: {fecha_documento}")
         
         # Exportar resultados
         exportar_silver(df, carpeta_silver)
@@ -532,6 +540,10 @@ def procesar_sin_gui(ruta_archivo: Path, carpeta_salida: Path) -> dict:
             print("   ⚠️  Advertencias de validación:")
             for error in errores:
                 print(f"     • {error}")
+
+        fecha_documento = extract_control_practicantes_document_date(ruta_archivo)
+        df = append_control_practicantes_document_date_column(df, ruta_archivo)
+        print(f"   ✓ FECHA_DOCUMENTO detectada desde filename: {fecha_documento}")
         
         # Crear carpeta de salida si no existe
         carpeta_salida.mkdir(parents=True, exist_ok=True)
@@ -544,7 +556,8 @@ def procesar_sin_gui(ruta_archivo: Path, carpeta_salida: Path) -> dict:
         return {
             'success': True,
             'parquet': ruta_parquet,
-            'registros': registros_procesados
+            'registros': registros_procesados,
+            'fecha_documento': fecha_documento,
         }
         
     except Exception as e:

@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from src.utils.ui.widgets.base_etl_widget import BaseETLWidget
+from src.utils.bd_document_date import has_document_date_fragment
 from .worker import ControlPracticantesWorker
 from src.utils.ui.file_selector_qt import quick_file_select_qt
 
@@ -71,19 +72,13 @@ class ControlPracticantesWidget(BaseETLWidget):
             self.btn_process.setEnabled(False)
             return
         
-        # Validar nombre del archivo
-        nombre_esperado = "LISTA DE CONTRATOS Y PRACTICANTES - CONTROL"
-        nombre_archivo = archivo.stem
-        
-        nombre_valido = nombre_esperado in nombre_archivo.upper()
-        
-        if not nombre_valido:
-            self._log(f"⚠️  Nombre de archivo no coincide con el esperado")
+        # Warning suave: solo alertar si el filename no trae fecha DD.MM.YYYY
+        if not has_document_date_fragment(archivo):
+            self._log("⚠️  El nombre del archivo no contiene una fecha con formato DD.MM.YYYY")
             
             mensaje_warning = f"⚠️  Archivo: {archivo.name}\n\n"
-            mensaje_warning += f"⚠️  Advertencia: El nombre del archivo no coincide\n"
-            mensaje_warning += f"   con el esperado:\n"
-            mensaje_warning += f"   '{nombre_esperado}.xlsx'\n\n"
+            mensaje_warning += "⚠️  Advertencia: El nombre del archivo no contiene\n"
+            mensaje_warning += "   una fecha en formato 'DD.MM.YYYY'.\n\n"
             mensaje_warning += f"   ¿Desea continuar de todas formas?"
             
             self.label_files.setText(mensaje_warning)

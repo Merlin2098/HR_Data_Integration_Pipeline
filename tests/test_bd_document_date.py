@@ -30,7 +30,7 @@ def test_extract_bd_document_date_rejects_invalid_pattern():
     try:
         extract_bd_document_date(Path("Base de Datos 21.12.2025.xlsm"))
     except ValueError as exc:
-        assert "expected BD pattern" in str(exc)
+        assert "BD. DD.MM.YYYY..xlsx|xlsm|xls" in str(exc)
     else:
         raise AssertionError("Expected ValueError for invalid filename pattern")
 

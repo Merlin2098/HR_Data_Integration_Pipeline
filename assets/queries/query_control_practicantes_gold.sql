@@ -4,6 +4,7 @@ WITH calculo_tiempo AS (
         CONDICION,
         "FECHA ING" AS Fecha_Ingreso,
         "F. RENOVACION" AS Fecha_Renovacion,
+        FECHA_DOCUMENTO,
         SEDE,
         UNIVERSIDAD,
         "JEFE INMEDIATO",

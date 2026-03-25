@@ -5,11 +5,18 @@ from pathlib import Path
 import re
 from typing import Any
 
-from src.utils.bd_document_date import extract_bd_document_date
+from src.utils.bd_document_date import (
+    extract_bd_document_date,
+    extract_control_practicantes_document_date,
+)
 from src.utils.structured_config import load_structured_data, resolve_structured_path
 
 
 EXCEL_EXTENSIONS = {".xlsx", ".xlsm", ".xls"}
+DOCUMENT_DATE_VALIDATORS = {
+    "bd": extract_bd_document_date,
+    "control_practicantes": extract_control_practicantes_document_date,
+}
 
 
 class SourceValidationError(ValueError):
@@ -99,9 +106,11 @@ def validate_excel_source(
         if not filename_matches:
             report.add_error(file_path, f"Filename does not match regex: {filename_regex}")
 
-    if str(contract.get("id", "")).strip().lower() == "bd" and filename_matches:
+    contract_id = str(contract.get("id", "")).strip().lower()
+    document_date_validator = DOCUMENT_DATE_VALIDATORS.get(contract_id)
+    if document_date_validator and filename_matches:
         try:
-            extract_bd_document_date(file_path)
+            document_date_validator(file_path)
         except ValueError as exc:
             report.add_error(file_path, str(exc))
 
