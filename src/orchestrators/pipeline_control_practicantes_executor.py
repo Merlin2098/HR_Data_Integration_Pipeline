@@ -31,7 +31,7 @@ class PipelineControlPracticantesExecutor(QObject):
     stage_started = Signal(str, str)  # (nombre_stage, descripción)
     stage_completed = Signal(str, bool, float)  # (nombre_stage, éxito, duración)
     
-    def __init__(self, yaml_path: Path, archivo: Path, output_dir: Path):
+    def __init__(self, yaml_path: Path, archivo: Path, output_dir: Path, export_excel_gold: bool = False):
         """
         Inicializa el executor
         
@@ -44,6 +44,7 @@ class PipelineControlPracticantesExecutor(QObject):
         self.yaml_path = yaml_path
         self.archivo = archivo
         self.output_dir = output_dir
+        self.export_excel_gold = export_excel_gold
         self.pipeline_config = None
         self.stages_results = {}
         self.last_stage_error: Optional[Dict[str, Any]] = None
@@ -297,7 +298,8 @@ class PipelineControlPracticantesExecutor(QObject):
             
             return {
                 'ruta_silver': ruta_silver,
-                'carpeta_gold': carpeta_gold
+                'carpeta_gold': carpeta_gold,
+                'export_excel_gold': self.export_excel_gold,
             }
         
         else:

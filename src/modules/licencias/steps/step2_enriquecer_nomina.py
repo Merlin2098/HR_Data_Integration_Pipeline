@@ -23,6 +23,8 @@ import time
 import sys
 from tkinter import Tk, filedialog
 
+from src.utils.gold_export import maybe_write_excel
+
 
 def get_resource_path(relative_path: str) -> Path:
     """
@@ -126,7 +128,11 @@ def enriquecer_nomina_con_licencias(
     return df_enriquecido
 
 
-def guardar_resultados(df_enriquecido: pl.DataFrame, ruta_nomina: Path):
+def guardar_resultados(
+    df_enriquecido: pl.DataFrame,
+    ruta_nomina: Path,
+    export_excel: bool = False,
+):
     """
     Guarda el DataFrame enriquecido en Gold solo en actual/.
     La estructura se crea en la misma ubicación del archivo de nómina.
@@ -153,11 +159,23 @@ def guardar_resultados(df_enriquecido: pl.DataFrame, ruta_nomina: Path):
     print(f"    Ubicación: actual/{ruta_parquet_actual.name}")
     
     # Archivo actual Excel
-    print(f"  - Guardando actual/excel...", end='', flush=True)
     ruta_excel_actual = carpeta_actual / f"{nombre_base}.xlsx"
-    df_enriquecido.write_excel(ruta_excel_actual)
-    print(f" ✓")
-    print(f"    Ubicación: actual/{ruta_excel_actual.name}")
+    ruta_excel_actual = maybe_write_excel(
+        ruta_excel_actual,
+        export_excel,
+        lambda path: df_enriquecido.write_excel(path),
+    )
+    if ruta_excel_actual is not None:
+        print(f"  - Guardando actual/excel...", end='', flush=True)
+        print(f" ✓")
+        print(f"    Ubicación: actual/{ruta_excel_actual.name}")
+    else:
+        print("  - Excel omitido (exportación opcional desactivada)")
+
+    return {
+        'parquet_actual': ruta_parquet_actual,
+        'excel': ruta_excel_actual,
+    }
 
 
 def main():
@@ -206,7 +224,7 @@ def main():
         )
         
         # Guardar resultados
-        guardar_resultados(df_enriquecido, ruta_nomina)
+        rutas = guardar_resultados(df_enriquecido, ruta_nomina)
         
         # Calcular tiempo total
         tiempo_total = time.time() - tiempo_inicio
@@ -220,7 +238,8 @@ def main():
         
         print(f"\n📂 Archivos generados:")
         print(f"  - actual/Planilla Metso BI_Gold_Con_Licencias.parquet")
-        print(f"  - actual/Planilla Metso BI_Gold_Con_Licencias.xlsx")
+        if rutas['excel'] is not None:
+            print(f"  - actual/Planilla Metso BI_Gold_Con_Licencias.xlsx")
         
         print(f"\n⏱️  Tiempo de ejecución: {tiempo_total:.2f}s")
         
@@ -244,7 +263,11 @@ if __name__ == "__main__":
         traceback.print_exc()
         sys.exit(1)
 
-def procesar_sin_gui(ruta_nomina: Path, ruta_licencias: Path) -> dict:
+def procesar_sin_gui(
+    ruta_nomina: Path,
+    ruta_licencias: Path,
+    export_excel_gold: bool = False,
+) -> dict:
     """
     Enriquece nómina Gold con licencias sin interfaz gráfica (modo headless)
     Usado por el pipeline executor
@@ -314,12 +337,18 @@ def procesar_sin_gui(ruta_nomina: Path, ruta_licencias: Path) -> dict:
         ruta_parquet_actual = carpeta_actual / f"{nombre_base}.parquet"
         df_enriquecido.write_parquet(ruta_parquet_actual, compression="snappy")
         
-        # Archivo actual Excel
         ruta_excel_actual = carpeta_actual / f"{nombre_base}.xlsx"
-        df_enriquecido.write_excel(ruta_excel_actual)
+        ruta_excel_actual = maybe_write_excel(
+            ruta_excel_actual,
+            export_excel_gold,
+            lambda path: df_enriquecido.write_excel(path),
+        )
         
         print(f"   ✓ Parquet actual: {ruta_parquet_actual.name}")
-        print(f"   ✓ Excel: {ruta_excel_actual.name}")
+        if ruta_excel_actual is not None:
+            print(f"   ✓ Excel: {ruta_excel_actual.name}")
+        else:
+            print("   ℹ️ Excel omitido (exportación opcional desactivada)")
         
         return {
             'success': True,

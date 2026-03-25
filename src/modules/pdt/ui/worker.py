@@ -34,8 +34,8 @@ from src.utils.lazy_loader import create_etl_loader
 class PDTWorker(BaseETLWorker):
     """Worker para procesamiento de Relación de Ingresos (PDT) con lazy loading"""
     
-    def __init__(self, archivos, output_dir):
-        super().__init__(archivos, output_dir)
+    def __init__(self, archivos, output_dir, export_excel_gold: bool = False):
+        super().__init__(archivos, output_dir, export_excel_gold=export_excel_gold)
         
         # Configurar lazy loader para este ETL
         self.loader = create_etl_loader('pdt', {
@@ -283,8 +283,9 @@ class PDTWorker(BaseETLWorker):
                 # Guardar gold (con versionamiento automático)
                 carpeta_silver = ruta_empleados_silver.parent
                 ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico = guardar_resultados_gold(
-                    df_gold, 
-                    carpeta_silver
+                    df_gold,
+                    carpeta_silver,
+                    export_excel=self.export_excel_gold,
                 )
                 
                 # Calcular tiempo step2
@@ -305,7 +306,8 @@ class PDTWorker(BaseETLWorker):
                 self.logger.info(f"  • Registros Gold: {len(df_gold):,}")
                 self.logger.info(f"  • Columnas Gold: {len(df_gold.columns)}")
                 self.logger.info(f"  • Parquet (actual): {ruta_parquet_actual.name}")
-                self.logger.info(f"  • Excel (actual): {ruta_excel_actual.name}")
+                if ruta_excel_actual is not None:
+                    self.logger.info(f"  • Excel (actual): {ruta_excel_actual.name}")
                 self.logger.info(f"  ⏱️ Duración: {self.logger.format_duration(self.timers['step2'])}")
                 self.logger.info("-"*70)
                 
@@ -406,8 +408,9 @@ class PDTWorker(BaseETLWorker):
                 # Guardar gold (con versionamiento automático)
                 carpeta_silver = ruta_practicantes_silver.parent
                 ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico = guardar_resultados_gold_prac(
-                    df_gold, 
-                    carpeta_silver
+                    df_gold,
+                    carpeta_silver,
+                    export_excel=self.export_excel_gold,
                 )
                 
                 # Calcular tiempo step3
@@ -428,7 +431,8 @@ class PDTWorker(BaseETLWorker):
                 self.logger.info(f"  • Registros Gold: {len(df_gold):,}")
                 self.logger.info(f"  • Columnas Gold: {len(df_gold.columns)}")
                 self.logger.info(f"  • Parquet (actual): {ruta_parquet_actual.name}")
-                self.logger.info(f"  • Excel (actual): {ruta_excel_actual.name}")
+                if ruta_excel_actual is not None:
+                    self.logger.info(f"  • Excel (actual): {ruta_excel_actual.name}")
                 self.logger.info(f"  ⏱️ Duración: {self.logger.format_duration(self.timers['step3'])}")
                 self.logger.info("-"*70)
                 

@@ -22,8 +22,8 @@ from src.utils.validate_source import SourceValidationError, validate_all_source
 class ControlPracticantesWorker(BaseETLWorker):
     """Worker para procesamiento de control de practicantes con pipeline completo"""
     
-    def __init__(self, archivos, output_dir):
-        super().__init__(archivos, output_dir)
+    def __init__(self, archivos, output_dir, export_excel_gold: bool = False):
+        super().__init__(archivos, output_dir, export_excel_gold=export_excel_gold)
         self.pipeline_executor = None
         
         # Timers
@@ -90,7 +90,8 @@ class ControlPracticantesWorker(BaseETLWorker):
             self.pipeline_executor = PipelineControlPracticantesExecutor(
                 yaml_path=yaml_path,
                 archivo=archivo,
-                output_dir=carpeta_trabajo
+                output_dir=carpeta_trabajo,
+                export_excel_gold=self.export_excel_gold,
             )
             
             # Conectar señales del executor con las del worker
@@ -142,9 +143,10 @@ class ControlPracticantesWorker(BaseETLWorker):
                     f"{flags_info}\n"
                     f"\n📂 Outputs generados en: {carpeta_trabajo.name}/\n"
                     f"  • silver/control_practicantes_silver.parquet\n"
-                    f"  • gold/control_practicantes_flagsgold.parquet\n"
-                    f"  • gold/control_practicantes_flagsgold.xlsx"
+                    f"  • gold/control_practicantes_flagsgold.parquet"
                 )
+                if self.export_excel_gold:
+                    mensaje += "\n  • gold/control_practicantes_flagsgold.xlsx"
                 
                 resultado['mensaje'] = mensaje
                 self.logger.info(mensaje)

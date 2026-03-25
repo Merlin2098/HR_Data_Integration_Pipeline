@@ -28,6 +28,7 @@ from src.utils.structured_config import (
     load_structured_data,
     structured_filetypes,
 )
+from src.utils.gold_export import maybe_write_excel
 
 
 def seleccionar_archivo_parquet() -> Path | None:
@@ -188,7 +189,12 @@ def dividir_por_modalidad(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]
     return df_empleados, df_practicantes
 
 
-def guardar_resultados(df_empleados: pl.DataFrame, df_practicantes: pl.DataFrame, carpeta_silver: Path):
+def guardar_resultados(
+    df_empleados: pl.DataFrame,
+    df_practicantes: pl.DataFrame,
+    carpeta_silver: Path,
+    export_excel: bool = False,
+):
     """
     Guarda ambos DataFrames en carpeta gold/ con sistema de versionamiento:
     - Archivos actuales sin timestamp en gold/
@@ -231,9 +237,16 @@ def guardar_resultados(df_empleados: pl.DataFrame, df_practicantes: pl.DataFrame
         df_empleados.write_parquet(ruta_emp_parquet_actual, compression="snappy")
         print(f" ✓")
         
-        print(f"    - Guardando actual (Excel)...", end='', flush=True)
-        df_empleados.write_excel(ruta_emp_excel_actual)
-        print(f" ✓")
+        ruta_emp_excel_actual = maybe_write_excel(
+            ruta_emp_excel_actual,
+            export_excel,
+            lambda path: df_empleados.write_excel(path),
+        )
+        if ruta_emp_excel_actual is not None:
+            print(f"    - Guardando actual (Excel)...", end='', flush=True)
+            print(f" ✓")
+        else:
+            print("    - Excel actual omitido (exportación opcional desactivada)")
         
         # Histórico
         ruta_emp_parquet_hist = carpeta_historico / f"bd_empleados_gold_{timestamp}.parquet"
@@ -243,9 +256,16 @@ def guardar_resultados(df_empleados: pl.DataFrame, df_practicantes: pl.DataFrame
         df_empleados.write_parquet(ruta_emp_parquet_hist, compression="snappy")
         print(f" ✓")
         
-        print(f"    - Guardando histórico (Excel)...", end='', flush=True)
-        df_empleados.write_excel(ruta_emp_excel_hist)
-        print(f" ✓")
+        ruta_emp_excel_hist = maybe_write_excel(
+            ruta_emp_excel_hist,
+            export_excel,
+            lambda path: df_empleados.write_excel(path),
+        )
+        if ruta_emp_excel_hist is not None:
+            print(f"    - Guardando histórico (Excel)...", end='', flush=True)
+            print(f" ✓")
+        else:
+            print("    - Excel histórico omitido (exportación opcional desactivada)")
         
         rutas['empleados'] = {
             'actual_parquet': ruta_emp_parquet_actual,
@@ -266,9 +286,16 @@ def guardar_resultados(df_empleados: pl.DataFrame, df_practicantes: pl.DataFrame
         df_practicantes.write_parquet(ruta_prac_parquet_actual, compression="snappy")
         print(f" ✓")
         
-        print(f"    - Guardando actual (Excel)...", end='', flush=True)
-        df_practicantes.write_excel(ruta_prac_excel_actual)
-        print(f" ✓")
+        ruta_prac_excel_actual = maybe_write_excel(
+            ruta_prac_excel_actual,
+            export_excel,
+            lambda path: df_practicantes.write_excel(path),
+        )
+        if ruta_prac_excel_actual is not None:
+            print(f"    - Guardando actual (Excel)...", end='', flush=True)
+            print(f" ✓")
+        else:
+            print("    - Excel actual omitido (exportación opcional desactivada)")
         
         # Histórico
         ruta_prac_parquet_hist = carpeta_historico / f"bd_practicantes_gold_{timestamp}.parquet"
@@ -278,9 +305,16 @@ def guardar_resultados(df_empleados: pl.DataFrame, df_practicantes: pl.DataFrame
         df_practicantes.write_parquet(ruta_prac_parquet_hist, compression="snappy")
         print(f" ✓")
         
-        print(f"    - Guardando histórico (Excel)...", end='', flush=True)
-        df_practicantes.write_excel(ruta_prac_excel_hist)
-        print(f" ✓")
+        ruta_prac_excel_hist = maybe_write_excel(
+            ruta_prac_excel_hist,
+            export_excel,
+            lambda path: df_practicantes.write_excel(path),
+        )
+        if ruta_prac_excel_hist is not None:
+            print(f"    - Guardando histórico (Excel)...", end='', flush=True)
+            print(f" ✓")
+        else:
+            print("    - Excel histórico omitido (exportación opcional desactivada)")
         
         rutas['practicantes'] = {
             'actual_parquet': ruta_prac_parquet_actual,
@@ -384,12 +418,14 @@ def main():
         if 'empleados' in rutas:
             print(f"\n  EMPLEADOS (actuales):")
             print(f"    - {rutas['empleados']['actual_parquet'].name}")
-            print(f"    - {rutas['empleados']['actual_excel'].name}")
+            if rutas['empleados']['actual_excel'] is not None:
+                print(f"    - {rutas['empleados']['actual_excel'].name}")
         
         if 'practicantes' in rutas:
             print(f"\n  PRACTICANTES (actuales):")
             print(f"    - {rutas['practicantes']['actual_parquet'].name}")
-            print(f"    - {rutas['practicantes']['actual_excel'].name}")
+            if rutas['practicantes']['actual_excel'] is not None:
+                print(f"    - {rutas['practicantes']['actual_excel'].name}")
         
         print(f"\n⏱️  Tiempo de ejecución: {tiempo_total:.2f}s")
         

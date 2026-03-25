@@ -34,6 +34,7 @@ ARCHIVOS_REQUERIDOS = [
     "assets/config/path_cache.json",
     "assets/queries/queries_flags_gold.sql",
     "src/utils/bd_document_date.py",
+    "src/utils/gold_export.py",
     "src/utils/month_name.py",
     "src/utils/validate_source.py",
     "src/orchestrators/pipelines/pipeline_nomina_licencias.yaml",

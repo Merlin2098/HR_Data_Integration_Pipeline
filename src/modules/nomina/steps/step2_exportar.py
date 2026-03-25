@@ -18,6 +18,7 @@ from src.utils.structured_config import (
     resolve_structured_path,
     structured_filetypes,
 )
+from src.utils.gold_export import maybe_write_excel
 from src.utils.month_name import add_month_name_column
 
 
@@ -294,7 +295,7 @@ def seleccionar_y_convertir_columnas(df_silver, esquema):
     return df_gold
 
 
-def guardar_resultados(df_gold, carpeta_silver):
+def guardar_resultados(df_gold, carpeta_silver, export_excel: bool = False):
     """
     Función de compatibilidad para el worker UI
     Guarda los archivos gold en actual/
@@ -333,12 +334,19 @@ def guardar_resultados(df_gold, carpeta_silver):
     
     # Generar Excel de visualización
     try:
-        generar_excel_visualizacion(df_gold, ruta_excel_gold)
-        size_mb = ruta_excel_gold.stat().st_size / (1024 * 1024) if ruta_excel_gold.exists() else 0
-        print(f"✓ Excel gold: {ruta_excel_gold.name} ({size_mb:.2f} MB)")
+        ruta_excel_gold = maybe_write_excel(
+            ruta_excel_gold,
+            export_excel,
+            lambda path: generar_excel_visualizacion(df_gold, path),
+        )
+        if ruta_excel_gold is not None:
+            size_mb = ruta_excel_gold.stat().st_size / (1024 * 1024) if ruta_excel_gold.exists() else 0
+            print(f"✓ Excel gold: {ruta_excel_gold.name} ({size_mb:.2f} MB)")
+        else:
+            print("ℹ️  Excel gold omitido (exportación opcional desactivada)")
     except Exception as e:
         print(f"⚠️  Error al generar Excel: {e}")
-        # No lanzar excepción, Excel es opcional
+        ruta_excel_gold = None
     
     print("-" * 70)
     
@@ -349,7 +357,11 @@ def guardar_resultados(df_gold, carpeta_silver):
     }
 
 
-def exportar_a_gold(ruta_parquet_silver: Path, carpeta_trabajo: Path) -> dict:
+def exportar_a_gold(
+    ruta_parquet_silver: Path,
+    carpeta_trabajo: Path,
+    export_excel_gold: bool = False,
+) -> dict:
     """
     Procesa Silver a Gold sin interfaz gráfica (modo headless)
     Usado por el pipeline executor
@@ -416,7 +428,11 @@ def exportar_a_gold(ruta_parquet_silver: Path, carpeta_trabajo: Path) -> dict:
         
         # 4. Guardar Gold con estructura simplificada
         carpeta_silver = ruta_parquet_silver.parent
-        rutas_gold = guardar_resultados(df_gold, carpeta_silver)
+        rutas_gold = guardar_resultados(
+            df_gold,
+            carpeta_silver,
+            export_excel=export_excel_gold,
+        )
         
         print(f"   ✓ Gold guardado exitosamente")
         print(f"     • Estructura: gold/")
@@ -577,7 +593,8 @@ def main():
     print(f"   gold/")
     print(f"   └── actual/        (Power BI apunta aquí)")
     print(f"       ├── Planilla_Metso_Consolidado.parquet")
-    print(f"       └── Planilla_Metso_Consolidado.xlsx")
+    if rutas['excel'] is not None:
+        print(f"       └── Planilla_Metso_Consolidado.xlsx")
     
     print("\n💡 Estructura simplificada - sin carpeta 'nomina' intermedia")
     print("💡 Los archivos en actual/ se sobreescriben en cada ejecución")

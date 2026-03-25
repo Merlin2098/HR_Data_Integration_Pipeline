@@ -26,7 +26,7 @@ class PipelineNominaExecutor(QObject):
     stage_started = Signal(str, str)  # (nombre_stage, descripción)
     stage_completed = Signal(str, bool, float)  # (nombre_stage, éxito, duración)
     
-    def __init__(self, yaml_path: Path, archivos: List[Path], output_dir: Path):
+    def __init__(self, yaml_path: Path, archivos: List[Path], output_dir: Path, export_excel_gold: bool = False):
         """
         Inicializa el executor
         
@@ -39,6 +39,7 @@ class PipelineNominaExecutor(QObject):
         self.yaml_path = yaml_path
         self.archivos = archivos
         self.output_dir = output_dir
+        self.export_excel_gold = export_excel_gold
         self.pipeline_config = None
         self.stages_results = {}
         self.last_stage_error: Optional[Dict[str, Any]] = None
@@ -288,7 +289,8 @@ class PipelineNominaExecutor(QObject):
             
             return {
                 'ruta_parquet_silver': ruta_parquet_silver,
-                'carpeta_trabajo': self.output_dir
+                'carpeta_trabajo': self.output_dir,
+                'export_excel_gold': self.export_excel_gold,
             }
         
         elif stage_index == 3:  # Stage 4: Enriquecimiento
@@ -297,7 +299,8 @@ class PipelineNominaExecutor(QObject):
             
             return {
                 'ruta_nomina': ruta_nomina_gold,
-                'ruta_licencias': ruta_licencias_silver
+                'ruta_licencias': ruta_licencias_silver,
+                'export_excel_gold': self.export_excel_gold,
             }
         
         else:

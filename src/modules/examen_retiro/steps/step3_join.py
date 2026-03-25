@@ -22,6 +22,8 @@ from datetime import datetime
 import time
 from tkinter import Tk, filedialog
 
+from src.utils.gold_export import maybe_write_excel
+
 
 def find_queries_folder() -> Path:
     """
@@ -238,7 +240,12 @@ def analizar_resultados(df: pl.DataFrame) -> dict:
     return stats_dict
 
 
-def guardar_resultados(df: pl.DataFrame, ruta_gold: Path, stats: dict):
+def guardar_resultados(
+    df: pl.DataFrame,
+    ruta_gold: Path,
+    stats: dict,
+    export_excel: bool = False,
+):
     """
     Guarda el resultado del JOIN en formatos parquet y Excel con versionamiento:
     - Archivos actuales sin timestamp en gold/
@@ -277,9 +284,16 @@ def guardar_resultados(df: pl.DataFrame, ruta_gold: Path, stats: dict):
     df.write_parquet(ruta_parquet_actual, compression="snappy")
     print(f" ✓")
     
-    print(f"    - Guardando Excel...", end='', flush=True)
-    df.write_excel(ruta_excel_actual)
-    print(f" ✓")
+    ruta_excel_actual = maybe_write_excel(
+        ruta_excel_actual,
+        export_excel,
+        lambda path: df.write_excel(path),
+    )
+    if ruta_excel_actual is not None:
+        print(f"    - Guardando Excel...", end='', flush=True)
+        print(f" ✓")
+    else:
+        print("    - Excel actual omitido (exportación opcional desactivada)")
     
     # === ARCHIVOS HISTÓRICOS (con timestamp) ===
     nombre_historico = f"examenes_retiro_gold_enriquecido_{timestamp}"
@@ -291,9 +305,16 @@ def guardar_resultados(df: pl.DataFrame, ruta_gold: Path, stats: dict):
     df.write_parquet(ruta_parquet_historico, compression="snappy")
     print(f" ✓")
     
-    print(f"    - Guardando Excel...", end='', flush=True)
-    df.write_excel(ruta_excel_historico)
-    print(f" ✓")
+    ruta_excel_historico = maybe_write_excel(
+        ruta_excel_historico,
+        export_excel,
+        lambda path: df.write_excel(path),
+    )
+    if ruta_excel_historico is not None:
+        print(f"    - Guardando Excel...", end='', flush=True)
+        print(f" ✓")
+    else:
+        print("    - Excel histórico omitido (exportación opcional desactivada)")
     
     return ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico
 
@@ -373,11 +394,13 @@ def main():
         print(f"\n📁 Archivos generados:")
         print(f"\n  Actuales (para Power BI):")
         print(f"    - {ruta_parquet_actual.name}")
-        print(f"    - {ruta_excel_actual.name}")
+        if ruta_excel_actual is not None:
+            print(f"    - {ruta_excel_actual.name}")
         
         print(f"\n  Históricos (con timestamp):")
         print(f"    - {ruta_parquet_historico.name}")
-        print(f"    - {ruta_excel_historico.name}")
+        if ruta_excel_historico is not None:
+            print(f"    - {ruta_excel_historico.name}")
         
         print(f"\n📂 Ubicación: {ruta_gold.parent}")
         

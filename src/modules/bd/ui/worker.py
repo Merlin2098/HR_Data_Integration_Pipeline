@@ -24,6 +24,7 @@ sys.path.insert(0, str(project_root))
 
 from src.utils.ui.workers.base_worker import BaseETLWorker
 from src.utils.bd_document_date import append_bd_document_date_column, extract_bd_document_date
+from src.utils.gold_export import maybe_write_excel
 from src.utils.validate_source import validate_all_sources_for_etl
 from src.utils.structured_config import load_structured_data, resolve_structured_path
 
@@ -31,13 +32,13 @@ from src.utils.structured_config import load_structured_data, resolve_structured
 class BDWorker(BaseETLWorker):
     """Worker para procesamiento de BD con lazy loading"""
     
-    def __init__(self, archivos, output_dir):
+    def __init__(self, archivos, output_dir, export_excel_gold: bool = False):
         """
         Args:
             archivos: List[Path] - Lista con 1 archivo Excel
             output_dir: Path - Directorio de salida (carpeta de trabajo)
         """
-        super().__init__(archivos, output_dir)
+        super().__init__(archivos, output_dir, export_excel_gold=export_excel_gold)
         
         # Lazy loading de DuckDB (solo si se ejecuta step 3)
         self.duckdb = None
@@ -509,7 +510,11 @@ class BDWorker(BaseETLWorker):
             self.logger.info(f"  ✓ Empleados (actual): {ruta_emp_actual.name}")
             
             ruta_emp_excel = carpeta_gold / "bd_empleados_gold.xlsx"
-            df_empleados.write_excel(ruta_emp_excel)
+            ruta_emp_excel = maybe_write_excel(
+                ruta_emp_excel,
+                self.export_excel_gold,
+                lambda path: df_empleados.write_excel(path),
+            )
             
             # Histórico
             ruta_emp_hist = carpeta_historico / f"bd_empleados_gold_{timestamp}.parquet"
@@ -524,7 +529,11 @@ class BDWorker(BaseETLWorker):
             self.logger.info(f"  ✓ Practicantes (actual): {ruta_prac_actual.name}")
             
             ruta_prac_excel = carpeta_gold / "bd_practicantes_gold.xlsx"
-            df_practicantes.write_excel(ruta_prac_excel)
+            ruta_prac_excel = maybe_write_excel(
+                ruta_prac_excel,
+                self.export_excel_gold,
+                lambda path: df_practicantes.write_excel(path),
+            )
             
             # Histórico
             ruta_prac_hist = carpeta_historico / f"bd_practicantes_gold_{timestamp}.parquet"
@@ -614,8 +623,15 @@ class BDWorker(BaseETLWorker):
         result.write_parquet(ruta_parquet_actual, compression="snappy")
         self.logger.info(f"  ✓ Parquet (actual): {ruta_parquet_actual.name}")
         
-        result.write_excel(ruta_excel_actual)
-        self.logger.info(f"  ✓ Excel (actual): {ruta_excel_actual.name}")
+        ruta_excel_actual = maybe_write_excel(
+            ruta_excel_actual,
+            self.export_excel_gold,
+            lambda path: result.write_excel(path),
+        )
+        if ruta_excel_actual is not None:
+            self.logger.info(f"  ✓ Excel (actual): {ruta_excel_actual.name}")
+        else:
+            self.logger.info("  ℹ️ Excel (actual) omitido")
         
         # === ARCHIVOS HISTÓRICOS (con timestamp) ===
         nombre_historico = f"bd_empleados_flags_gold_{timestamp}"
@@ -626,8 +642,15 @@ class BDWorker(BaseETLWorker):
         result.write_parquet(ruta_parquet_historico, compression="snappy")
         self.logger.info(f"  ✓ Parquet (histórico): {ruta_parquet_historico.name}")
         
-        result.write_excel(ruta_excel_historico)
-        self.logger.info(f"  ✓ Excel (histórico): {ruta_excel_historico.name}")
+        ruta_excel_historico = maybe_write_excel(
+            ruta_excel_historico,
+            self.export_excel_gold,
+            lambda path: result.write_excel(path),
+        )
+        if ruta_excel_historico is not None:
+            self.logger.info(f"  ✓ Excel (histórico): {ruta_excel_historico.name}")
+        else:
+            self.logger.info("  ℹ️ Excel (histórico) omitido")
         
         self.logger.info(f"\n📁 Ubicación:")
         self.logger.info(f"  • Actuales: gold/")

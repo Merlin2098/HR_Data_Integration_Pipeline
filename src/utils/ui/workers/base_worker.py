@@ -38,10 +38,11 @@ class BaseETLWorker(QThread):
     progress_updated = Signal(int, str)  # (porcentaje, mensaje)
     finished = Signal(bool, str, dict)   # (éxito, mensaje, resultados)
     
-    def __init__(self, archivos: List[Path], output_dir: Path):
+    def __init__(self, archivos: List[Path], output_dir: Path, export_excel_gold: bool = False):
         super().__init__()
         self.archivos = archivos
         self.output_dir = output_dir
+        self.export_excel_gold = export_excel_gold
         
         # Logger con señales
         self.logger = UILogger(pipeline_name=self.get_pipeline_name())

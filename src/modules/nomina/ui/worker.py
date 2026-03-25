@@ -22,8 +22,8 @@ from src.utils.validate_source import SourceValidationError, validate_all_source
 class NominaWorker(BaseETLWorker):
     """Worker para procesamiento de nóminas con pipeline completo"""
     
-    def __init__(self, archivos, output_dir):
-        super().__init__(archivos, output_dir)
+    def __init__(self, archivos, output_dir, export_excel_gold: bool = False):
+        super().__init__(archivos, output_dir, export_excel_gold=export_excel_gold)
         self.pipeline_executor = None
         
         # Timers
@@ -93,7 +93,8 @@ class NominaWorker(BaseETLWorker):
             self.pipeline_executor = PipelineNominaExecutor(
                 yaml_path=yaml_path,
                 archivos=self.archivos,
-                output_dir=self.output_dir
+                output_dir=self.output_dir,
+                export_excel_gold=self.export_excel_gold,
             )
             
             # Conectar señales del executor con las del worker
@@ -132,9 +133,10 @@ class NominaWorker(BaseETLWorker):
                     f"  • Silver: Planilla Metso Consolidado.parquet\n"
                     f"  • Silver: licencias_consolidadas.parquet\n"
                     f"  • Gold: Planilla_Metso_Consolidado.parquet\n"
-                    f"  • Gold: Planilla Metso BI_Gold_Con_Licencias.parquet\n"
-                    f"  • Gold: Planilla Metso BI_Gold_Con_Licencias.xlsx"
+                    f"  • Gold: Planilla Metso BI_Gold_Con_Licencias.parquet"
                 )
+                if self.export_excel_gold:
+                    mensaje += "\n  • Gold: Planilla Metso BI_Gold_Con_Licencias.xlsx"
                 
                 resultado['mensaje'] = mensaje
                 self.logger.info(mensaje)

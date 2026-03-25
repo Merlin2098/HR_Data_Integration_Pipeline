@@ -27,6 +27,8 @@ import time
 import sys
 from tkinter import Tk, filedialog
 
+from src.utils.gold_export import maybe_write_excel
+
 
 def get_resource_path(relative_path: str) -> Path:
     """
@@ -118,7 +120,11 @@ def generar_gold_con_flags(ruta_silver: Path) -> pl.DataFrame:
     return df_gold
 
 
-def guardar_resultados(df_gold: pl.DataFrame, ruta_silver: Path):
+def guardar_resultados(
+    df_gold: pl.DataFrame,
+    ruta_silver: Path,
+    export_excel: bool = False,
+):
     """
     Guarda el DataFrame Gold en archivos Parquet y Excel.
     
@@ -146,13 +152,22 @@ def guardar_resultados(df_gold: pl.DataFrame, ruta_silver: Path):
     print(f"    Ubicación: {ruta_parquet.name}")
     
     # Guardar Excel
-    print(f"  - Guardando excel...", end='', flush=True)
     ruta_excel = carpeta_gold / f"{nombre_base}.xlsx"
-    df_gold.write_excel(ruta_excel)
-    print(f" ✓")
-    print(f"    Ubicación: {ruta_excel.name}")
+    ruta_excel = maybe_write_excel(
+        ruta_excel,
+        export_excel,
+        lambda path: df_gold.write_excel(path),
+    )
+    if ruta_excel is not None:
+        print(f"  - Guardando excel...", end='', flush=True)
+        print(f" ✓")
+        print(f"    Ubicación: {ruta_excel.name}")
+    else:
+        print("  - Excel omitido (exportación opcional desactivada)")
     
     print(f"\n📊 Total registros: {len(df_gold):,}")
+
+    return ruta_parquet, ruta_excel
 
 
 def main():
@@ -184,7 +199,7 @@ def main():
         df_gold = generar_gold_con_flags(ruta_silver)
         
         # Guardar resultados
-        guardar_resultados(df_gold, ruta_silver)
+        ruta_parquet, ruta_excel = guardar_resultados(df_gold, ruta_silver)
         
         # Calcular tiempo total
         tiempo_total = time.time() - tiempo_inicio
@@ -197,8 +212,9 @@ def main():
         print(f"\n✓ Procesamiento completado exitosamente")
         
         print(f"\n📂 Archivos generados:")
-        print(f"  - control_practicantes_flagsgold.parquet")
-        print(f"  - control_practicantes_flagsgold.xlsx")
+        print(f"  - {ruta_parquet.name}")
+        if ruta_excel is not None:
+            print(f"  - {ruta_excel.name}")
         
         print(f"\n⏱️  Tiempo de ejecución: {tiempo_total:.2f}s")
         
@@ -223,7 +239,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-def procesar_sin_gui(ruta_silver: Path, carpeta_gold: Path) -> dict:
+def procesar_sin_gui(
+    ruta_silver: Path,
+    carpeta_gold: Path,
+    export_excel_gold: bool = False,
+) -> dict:
     """
     Genera capa Gold sin interfaz gráfica (modo headless)
     Usado por el pipeline executor
@@ -286,12 +306,18 @@ def procesar_sin_gui(ruta_silver: Path, carpeta_gold: Path) -> dict:
         ruta_parquet = carpeta_gold / f"{nombre_base}.parquet"
         df_gold.write_parquet(ruta_parquet, compression="snappy")
         
-        # Guardar Excel
         ruta_excel = carpeta_gold / f"{nombre_base}.xlsx"
-        df_gold.write_excel(ruta_excel)
+        ruta_excel = maybe_write_excel(
+            ruta_excel,
+            export_excel_gold,
+            lambda path: df_gold.write_excel(path),
+        )
         
         print(f"   ✓ Parquet guardado: {ruta_parquet.name}")
-        print(f"   ✓ Excel guardado: {ruta_excel.name}")
+        if ruta_excel is not None:
+            print(f"   ✓ Excel guardado: {ruta_excel.name}")
+        else:
+            print("   ℹ️ Excel omitido (exportación opcional desactivada)")
         
         return {
             'success': True,

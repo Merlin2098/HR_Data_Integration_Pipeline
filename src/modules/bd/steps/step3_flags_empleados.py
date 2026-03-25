@@ -35,6 +35,8 @@ from tkinter import Tk, filedialog
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
+from src.utils.gold_export import maybe_write_excel
+
 
 def seleccionar_archivo(titulo: str) -> Path | None:
     """Abre un explorador de archivos para seleccionar un archivo."""
@@ -257,7 +259,11 @@ def generar_resumen_flags(df: pl.DataFrame, columnas_originales: list) -> dict:
     return stats
 
 
-def guardar_resultados(df: pl.DataFrame, carpeta_gold: Path) -> tuple[Path, Path, Path, Path]:
+def guardar_resultados(
+    df: pl.DataFrame,
+    carpeta_gold: Path,
+    export_excel: bool = False,
+) -> tuple[Path, Path | None, Path, Path | None]:
     """
     Guarda el resultado con versionamiento:
     - Archivos actuales sin timestamp en gold/
@@ -293,7 +299,6 @@ def guardar_resultados(df: pl.DataFrame, carpeta_gold: Path) -> tuple[Path, Path
     tamanio_mb = ruta_parquet_actual.stat().st_size / (1024 * 1024)
     print(f" ✓ ({tamanio_mb:.2f} MB)")
     
-    print(f"    - Guardando Excel...", end='', flush=True)
     # Guardar Excel usando openpyxl directamente (más eficiente)
     wb = Workbook()
     ws = wb.active
@@ -327,9 +332,17 @@ def guardar_resultados(df: pl.DataFrame, carpeta_gold: Path) -> tuple[Path, Path
         adjusted_width = min(max_length + 2, 50)
         ws.column_dimensions[ws.cell(row=1, column=col_idx).column_letter].width = adjusted_width
     
-    wb.save(ruta_excel_actual)
-    tamanio_mb = ruta_excel_actual.stat().st_size / (1024 * 1024)
-    print(f" ✓ ({tamanio_mb:.2f} MB)")
+    ruta_excel_actual = maybe_write_excel(
+        ruta_excel_actual,
+        export_excel,
+        lambda path: wb.save(path),
+    )
+    if ruta_excel_actual is not None:
+        tamanio_mb = ruta_excel_actual.stat().st_size / (1024 * 1024)
+        print(f"    - Guardando Excel...", end='', flush=True)
+        print(f" ✓ ({tamanio_mb:.2f} MB)")
+    else:
+        print("    - Excel actual omitido (exportación opcional desactivada)")
     
     # === ARCHIVOS HISTÓRICOS (con timestamp) ===
     nombre_historico = f"bd_empleados_flags_gold_{timestamp}"
@@ -341,9 +354,16 @@ def guardar_resultados(df: pl.DataFrame, carpeta_gold: Path) -> tuple[Path, Path
     df.write_parquet(ruta_parquet_historico, compression="snappy")
     print(f" ✓")
     
-    print(f"    - Guardando Excel...", end='', flush=True)
-    wb.save(ruta_excel_historico)
-    print(f" ✓")
+    ruta_excel_historico = maybe_write_excel(
+        ruta_excel_historico,
+        export_excel,
+        lambda path: wb.save(path),
+    )
+    if ruta_excel_historico is not None:
+        print(f"    - Guardando Excel...", end='', flush=True)
+        print(f" ✓")
+    else:
+        print("    - Excel histórico omitido (exportación opcional desactivada)")
     
     return ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico
 
@@ -449,11 +469,13 @@ def main():
     print(f"\n📁 Archivos generados:")
     print(f"\n  Actuales (para Power BI):")
     print(f"    - {ruta_p_act.name}")
-    print(f"    - {ruta_e_act.name}")
+    if ruta_e_act is not None:
+        print(f"    - {ruta_e_act.name}")
     
     print(f"\n  Históricos (con timestamp):")
     print(f"    - {ruta_p_hist.name}")
-    print(f"    - {ruta_e_hist.name}")
+    if ruta_e_hist is not None:
+        print(f"    - {ruta_e_hist.name}")
     
     print(f"\n📂 Ubicación: {carpeta_gold}")
     

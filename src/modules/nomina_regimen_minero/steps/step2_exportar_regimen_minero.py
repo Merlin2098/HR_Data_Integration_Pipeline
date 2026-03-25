@@ -13,6 +13,7 @@ from src.utils.structured_config import (
     load_structured_data,
     structured_filetypes,
 )
+from src.utils.gold_export import maybe_write_excel
 from src.utils.month_name import add_month_name_column
 
 
@@ -324,12 +325,16 @@ def main():
     df_gold.write_parquet(ruta_parquet_gold_actual)
     print(f"✓ Parquet gold (actual): {ruta_parquet_gold_actual.name}")
     
-    # Generar Excel de visualización en actual/
-    try:
-        generar_excel_visualizacion(df_gold, ruta_excel_gold_actual)
+    # Generar Excel de visualización en actual/ solo si fue solicitado
+    ruta_excel_gold_actual = maybe_write_excel(
+        ruta_excel_gold_actual,
+        False,
+        lambda path: generar_excel_visualizacion(df_gold, path),
+    )
+    if ruta_excel_gold_actual is not None:
         print(f"✓ Excel gold (actual): {ruta_excel_gold_actual.name}")
-    except Exception as e:
-        print(f"⚠️  Error al generar Excel en actual/: {e}")
+    else:
+        print("ℹ️  Excel gold omitido (exportación opcional desactivada)")
     
     # Resumen final
     duracion = (datetime.now() - inicio).total_seconds()
@@ -343,7 +348,8 @@ def main():
     print(f"   {carpeta_base / 'gold'}/")
     print(f"   └── actual/        (Power BI apunta aquí - se sobreescribe)")
     print(f"       ├── Planilla Metso - Regimen Minero.parquet")
-    print(f"       └── Planilla Metso - Regimen Minero.xlsx")
+    if ruta_excel_gold_actual is not None:
+        print(f"       └── Planilla Metso - Regimen Minero.xlsx")
     
     print("\n💡 Los archivos en actual/ se sobreescriben en cada ejecución")
     print("=" * 70)

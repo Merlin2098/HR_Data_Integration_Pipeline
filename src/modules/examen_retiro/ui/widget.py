@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QProgressBar, QLabel, QTextEdit, QGroupBox
+    QProgressBar, QLabel, QTextEdit, QGroupBox, QCheckBox
 )
 from PySide6.QtCore import Qt
 
@@ -119,6 +119,10 @@ class ExamenRetiroWidget(QWidget):
         row_clear.addWidget(self.btn_clear)
         
         layout_files.addLayout(row_clear)
+
+        self.chk_export_excel_gold = QCheckBox("Generar Excel adicional en Gold")
+        self.chk_export_excel_gold.setChecked(False)
+        layout_files.addWidget(self.chk_export_excel_gold)
         
         group_files.setLayout(layout_files)
         main_layout.addWidget(group_files)
@@ -310,7 +314,8 @@ class ExamenRetiroWidget(QWidget):
             archivo_bronze=self.archivo_bronze,
             archivo_cc_actual=self.archivo_cc_actual,
             archivo_cc_old=self.archivo_cc_old,
-            output_dir=output_dir
+            output_dir=output_dir,
+            export_excel_gold=self.chk_export_excel_gold.isChecked(),
         )
         
         self.worker.progress_updated.connect(self._on_progress)

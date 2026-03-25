@@ -38,13 +38,14 @@ class ExamenRetiroWorker(QThread):
     finished = Signal(bool, str, dict)
     
     def __init__(self, archivo_bronze: Path, archivo_cc_actual: Path, 
-                 archivo_cc_old: Path, output_dir: Path):
+                 archivo_cc_old: Path, output_dir: Path, export_excel_gold: bool = False):
         super().__init__()
         
         self.archivo_bronze = archivo_bronze
         self.archivo_cc_actual = archivo_cc_actual
         self.archivo_cc_old = archivo_cc_old
         self.output_dir = output_dir
+        self.export_excel_gold = export_excel_gold
         
         # Logger con señales
         self.logger = UILogger(pipeline_name="examen_retiro")
@@ -302,7 +303,8 @@ class ExamenRetiroWorker(QThread):
                     carpeta_silver = ruta_parquet_silver.parent
                     ruta_parquet_gold_actual, ruta_excel_gold_actual, ruta_parquet_gold_historico, ruta_excel_gold_historico = guardar_resultados_step2(
                         df_gold,
-                        carpeta_silver
+                        carpeta_silver,
+                        export_excel=self.export_excel_gold,
                     )
                     
                     self.timers['step2'] = time.time() - tiempo_inicio_step2
@@ -436,7 +438,8 @@ class ExamenRetiroWorker(QThread):
                     ruta_parquet_enriq_actual, ruta_excel_enriq_actual, ruta_parquet_enriq_historico, ruta_excel_enriq_historico = guardar_resultados_step3(
                         df_resultado,
                         ruta_gold,
-                        stats
+                        stats,
+                        export_excel=self.export_excel_gold,
                     )
                     
                     self.timers['step3'] = time.time() - tiempo_inicio_step3

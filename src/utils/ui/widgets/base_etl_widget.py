@@ -4,7 +4,7 @@ Widget base reutilizable para todos los ETLs
 """
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QProgressBar, QLabel, QTextEdit, QGroupBox, QMessageBox
+    QProgressBar, QLabel, QTextEdit, QGroupBox, QMessageBox, QCheckBox
 )
 from PySide6.QtCore import Qt
 from pathlib import Path
@@ -47,6 +47,9 @@ class BaseETLWidget(QWidget):
         self.label_files = QLabel(self._get_no_files_message())
         self.label_files.setProperty("labelStyle", "secondary")
         self.label_files.setWordWrap(True)
+
+        self.chk_export_excel_gold = QCheckBox("Generar Excel adicional en Gold")
+        self.chk_export_excel_gold.setChecked(False)
         
         btn_layout = QHBoxLayout()
         self.btn_select = QPushButton(self._get_select_button_text())
@@ -59,6 +62,7 @@ class BaseETLWidget(QWidget):
         btn_layout.addWidget(self.btn_clear)
         
         layout_files.addWidget(self.label_files)
+        layout_files.addWidget(self.chk_export_excel_gold)
         layout_files.addLayout(btn_layout)
         group_files.setLayout(layout_files)
         main_layout.addWidget(group_files)
@@ -163,7 +167,11 @@ class BaseETLWidget(QWidget):
         
         # Crear worker específico
         WorkerClass = self._get_worker_class()
-        self.worker = WorkerClass(self.archivos_seleccionados, output_dir)
+        self.worker = WorkerClass(
+            self.archivos_seleccionados,
+            output_dir,
+            export_excel_gold=self.chk_export_excel_gold.isChecked(),
+        )
         self.worker.progress_updated.connect(self._on_progress)
         self.worker.finished.connect(self._on_finished)
         self.worker.start()

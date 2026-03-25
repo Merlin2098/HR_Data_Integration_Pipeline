@@ -19,6 +19,7 @@ project_root = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(project_root))
 
 from src.utils.ui.workers.base_worker import BaseETLWorker
+from src.utils.gold_export import maybe_write_excel
 from src.utils.lazy_loader import create_etl_loader
 from src.utils.validate_source import SourceValidationError, validate_all_sources_for_etl
 from src.utils.structured_config import load_structured_data, resolve_structured_path
@@ -27,8 +28,8 @@ from src.utils.structured_config import load_structured_data, resolve_structured
 class NominaRegimenMineroWorker(BaseETLWorker):
     """Worker para procesamiento de nóminas - Régimen Minero con lazy loading"""
     
-    def __init__(self, archivos, output_dir):
-        super().__init__(archivos, output_dir)
+    def __init__(self, archivos, output_dir, export_excel_gold: bool = False):
+        super().__init__(archivos, output_dir, export_excel_gold=export_excel_gold)
         
         # Configurar lazy loader para este ETL
         self.loader = create_etl_loader('nomina_regimen_minero', {
@@ -229,14 +230,21 @@ class NominaRegimenMineroWorker(BaseETLWorker):
                     df_gold.write_parquet(ruta_parquet_gold_actual)
                     self.logger.info(f"✓ Parquet gold (actual): {ruta_parquet_gold_actual.name}")
                     
-                    self.progress_updated.emit(90, "📝 Generando Excel con formato...")
-                    
-                    # Generar Excel en actual/
+                    self.progress_updated.emit(90, "📝 Evaluando exportación Excel...")
+
                     try:
-                        generar_excel_visualizacion(df_gold, ruta_excel_gold_actual)
-                        self.logger.info(f"✓ Excel gold (actual): {ruta_excel_gold_actual.name}")
+                        ruta_excel_gold_actual = maybe_write_excel(
+                            ruta_excel_gold_actual,
+                            self.export_excel_gold,
+                            lambda path: generar_excel_visualizacion(df_gold, path),
+                        )
+                        if ruta_excel_gold_actual is not None:
+                            self.logger.info(f"✓ Excel gold (actual): {ruta_excel_gold_actual.name}")
+                        else:
+                            self.logger.info("ℹ️ Excel gold omitido (exportación opcional desactivada)")
                     except Exception as e:
                         self.logger.warning(f"⚠️ Error al generar Excel en actual/: {e}")
+                        ruta_excel_gold_actual = None
                     
                     # Calcular tiempo step2
                     self.timers['step2'] = time.time() - tiempo_inicio_step2
@@ -255,7 +263,8 @@ class NominaRegimenMineroWorker(BaseETLWorker):
                     self.logger.info(f"  • Registros Gold: {len(df_gold):,}")
                     self.logger.info(f"  • Columnas Gold: {len(df_gold.columns)}")
                     self.logger.info(f"  • Parquet: {ruta_parquet_gold_actual.name}")
-                    self.logger.info(f"  • Excel: {ruta_excel_gold_actual.name}")
+                    if ruta_excel_gold_actual is not None:
+                        self.logger.info(f"  • Excel: {ruta_excel_gold_actual.name}")
                     self.logger.info(f"  ⏱️ Duración: {self.logger.format_duration(self.timers['step2'])}")
                     self.logger.info("-"*70)
                     

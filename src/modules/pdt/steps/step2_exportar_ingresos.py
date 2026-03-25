@@ -27,6 +27,7 @@ from src.utils.structured_config import (
     load_structured_data,
     structured_filetypes,
 )
+from src.utils.gold_export import maybe_write_excel
 from src.utils.month_name import add_month_name_column
 
 # ============================================================================
@@ -171,7 +172,7 @@ def generar_metricas_basicas(df: pl.DataFrame):
     print("=" * 80)
 
 
-def guardar_resultados(df: pl.DataFrame, carpeta_silver: Path):
+def guardar_resultados(df: pl.DataFrame, carpeta_silver: Path, export_excel: bool = False):
     """
     Guarda el DataFrame en carpeta gold/ con sistema de versionamiento:
     - Archivos actuales sin timestamp en gold/
@@ -210,9 +211,16 @@ def guardar_resultados(df: pl.DataFrame, carpeta_silver: Path):
     df.write_parquet(ruta_parquet_actual, compression="snappy")
     print(f" ✓")
     
-    print(f"    - Guardando Excel...", end='', flush=True)
-    df.write_excel(ruta_excel_actual)
-    print(f" ✓")
+    ruta_excel_actual = maybe_write_excel(
+        ruta_excel_actual,
+        export_excel,
+        lambda path: df.write_excel(path),
+    )
+    if ruta_excel_actual is not None:
+        print(f"    - Guardando Excel...", end='', flush=True)
+        print(f" ✓")
+    else:
+        print("    - Excel actual omitido (exportación opcional desactivada)")
     
     # === ARCHIVOS HISTÓRICOS (con timestamp) ===
     nombre_historico = f"empleados_gold_{timestamp}"
@@ -224,9 +232,16 @@ def guardar_resultados(df: pl.DataFrame, carpeta_silver: Path):
     df.write_parquet(ruta_parquet_historico, compression="snappy")
     print(f" ✓")
     
-    print(f"    - Guardando Excel...", end='', flush=True)
-    df.write_excel(ruta_excel_historico)
-    print(f" ✓")
+    ruta_excel_historico = maybe_write_excel(
+        ruta_excel_historico,
+        export_excel,
+        lambda path: df.write_excel(path),
+    )
+    if ruta_excel_historico is not None:
+        print(f"    - Guardando Excel...", end='', flush=True)
+        print(f" ✓")
+    else:
+        print("    - Excel histórico omitido (exportación opcional desactivada)")
     
     return ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico
 
@@ -315,7 +330,10 @@ def main():
         
         # 8. Guardar archivos (en la misma carpeta que el archivo Silver)
         carpeta_trabajo = archivo_silver.parent
-        ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico = guardar_resultados(df_gold, carpeta_trabajo)
+        ruta_parquet_actual, ruta_excel_actual, ruta_parquet_historico, ruta_excel_historico = guardar_resultados(
+            df_gold,
+            carpeta_trabajo,
+        )
         
         # Calcular tiempo total
         tiempo_total = time.time() - tiempo_inicio
@@ -333,11 +351,13 @@ def main():
         print(f"\n📁 Archivos generados:")
         print(f"\n  Actuales (para Power BI):")
         print(f"    - {ruta_parquet_actual.name}")
-        print(f"    - {ruta_excel_actual.name}")
+        if ruta_excel_actual is not None:
+            print(f"    - {ruta_excel_actual.name}")
         
         print(f"\n  Históricos (con timestamp):")
         print(f"    - {ruta_parquet_historico.name}")
-        print(f"    - {ruta_excel_historico.name}")
+        if ruta_excel_historico is not None:
+            print(f"    - {ruta_excel_historico.name}")
         
         print(f"\n⏱️  Tiempo de ejecución: {tiempo_total:.2f}s")
         
@@ -352,10 +372,12 @@ def main():
         print(f"  │   └── {archivo_silver.name}")
         print(f"  └── gold/")
         print(f"      ├── {ruta_parquet_actual.name}")
-        print(f"      ├── {ruta_excel_actual.name}")
         print(f"      └── historico/")
         print(f"          ├── {ruta_parquet_historico.name}")
-        print(f"          └── {ruta_excel_historico.name}")
+        if ruta_excel_actual is not None:
+            print(f"      ├── {ruta_excel_actual.name}")
+        if ruta_excel_historico is not None:
+            print(f"          └── {ruta_excel_historico.name}")
         
         print("\n" + "=" * 80)
         
