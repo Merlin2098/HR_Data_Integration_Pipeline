@@ -18,7 +18,7 @@ This creates a high-risk scenario for analytics:
 
 Because the project is used for business decision support, allowing invalid inputs to pass deeper into the pipeline creates a risk of producing misleading Gold outputs and incorrect reporting.
 
-The repository already includes a formal preflight mechanism in `src/utils/validate_source.py` and JSON source contracts under `assets/validate_source/` to validate files before ETL execution starts.
+The repository already includes a formal preflight mechanism in `src/utils/validate_source.py` and structured source contracts under `assets/validate_source/` to validate files before ETL execution starts.
 
 ## Decision
 
@@ -28,9 +28,11 @@ This means:
 
 - each ETL validates its input files before transformation starts
 - required worksheets, headers, filename patterns, and minimum columns must match the declared contract
+- files must be readable as supported Excel workbooks before processing continues
 - missing or shifted structures are treated as blocking errors
 - the pipeline fails fast instead of attempting partial or best-effort processing
 - only inputs that satisfy the minimum analytical contract are allowed into Silver and Gold processing
+- the packaged desktop application must ship the validation contracts as runtime assets
 
 ## Alternatives Considered
 
@@ -56,6 +58,7 @@ This would reduce implementation strictness, but it would depend too heavily on 
 - Fail-fast behavior reduces the risk of silent data quality issues reaching decision makers.
 - Users receive immediate feedback when a source file no longer satisfies the expected structure.
 - Preflight rules create a stronger boundary between operational spreadsheets and analytical datasets.
+- Executable builds remain aligned with runtime expectations because validation contracts are treated as required packaged assets.
 
 ### Tradeoffs
 
@@ -68,7 +71,9 @@ This would reduce implementation strictness, but it would depend too heavily on 
 - `README.md`
 - `src/utils/validate_source.py`
 - `assets/validate_source/`
-- `assets/validate_source/nomina.json`
-- `assets/validate_source/control_practicantes.json`
+- `assets/validate_source/nomina.yaml`
+- `assets/validate_source/control_practicantes.yaml`
+- `generar_exe.py`
 - `src/modules/nomina/ui/worker.py`
+- `src/modules/bd/ui/worker.py`
 - `src/modules/control_practicantes/ui/worker.py`

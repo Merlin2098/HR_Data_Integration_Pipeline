@@ -17,6 +17,7 @@ Use ADRs in this repository to document decisions that affect:
 ## ADR Convention
 
 - Store ADRs in `docs/adr/`.
+- Keep the English ADR under `docs/adr/` as the canonical repository version.
 - Use stable numeric identifiers such as `0001`, `0002`, and `0003`.
 - Name files as `<number>-<short-kebab-case-title>.md`.
 - Do not renumber old ADRs after they are created.
@@ -49,3 +50,8 @@ Each ADR should use this minimal structure:
 - [ADR-0003: Schema and Transformation Logic](adr/0003-schema-and-transformation-logic.md)
 - [ADR-0004: Preflight Validation](adr/0004-preflight-validation.md)
 - [ADR-0005: Cloud Migration Readiness](adr/0005-cloud-migration-readiness.md)
+
+## User Guides
+
+- [Documentacion en espanol](es/README.md)
+- [Guia de usuario: contratos preflight por fuente](es/guia-usuario-preflight-fuentes.md)
