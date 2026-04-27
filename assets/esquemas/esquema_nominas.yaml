@@ -147,6 +147,12 @@ schema:
     min_value: 0
     precision: 2
     description: Monto del subsidio por accidente
+  SUBSIDIO MATERNIDAD:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Monto del subsidio por maternidad
 constraints:
   primary_key:
   - PERIODO

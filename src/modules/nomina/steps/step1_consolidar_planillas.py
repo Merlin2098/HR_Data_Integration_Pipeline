@@ -16,6 +16,55 @@ import time
 import traceback
 
 
+SUBSIDIO_MATERNIDAD_COL = "SUBSIDIO MATERNIDAD"
+
+
+def _normalizar_header_para_match(nombre_columna):
+    """Normaliza encabezados solo para comparaciones tolerantes."""
+    return re.sub(r"\s+", " ", str(nombre_columna).strip()).casefold()
+
+
+def asegurar_columna_subsidio_maternidad(df):
+    """
+    Garantiza la columna SUBSIDIO MATERNIDAD.
+
+    El header puede venir con variaciones de mayúsculas/minúsculas. Si no
+    aparece en un mes, se deja vacía.
+    """
+    objetivo = _normalizar_header_para_match(SUBSIDIO_MATERNIDAD_COL)
+    coincidencias = [
+        col for col in df.columns
+        if _normalizar_header_para_match(col) == objetivo
+    ]
+
+    if not coincidencias:
+        return df.with_columns(pl.lit(None, dtype=pl.Utf8).alias(SUBSIDIO_MATERNIDAD_COL))
+
+    variantes = [col for col in coincidencias if col != SUBSIDIO_MATERNIDAD_COL]
+
+    if SUBSIDIO_MATERNIDAD_COL in df.columns:
+        columnas_origen = [SUBSIDIO_MATERNIDAD_COL] + variantes
+        df = df.with_columns(
+            pl.coalesce([pl.col(col) for col in columnas_origen])
+            .alias(SUBSIDIO_MATERNIDAD_COL)
+        )
+        if variantes:
+            df = df.drop(variantes)
+        return df
+
+    columna_origen = coincidencias[0]
+    df = df.rename({columna_origen: SUBSIDIO_MATERNIDAD_COL})
+    if len(coincidencias) > 1:
+        variantes_restantes = [col for col in coincidencias[1:] if col in df.columns]
+        df = df.with_columns(
+            pl.coalesce([pl.col(SUBSIDIO_MATERNIDAD_COL)] + [pl.col(col) for col in variantes_restantes])
+            .alias(SUBSIDIO_MATERNIDAD_COL)
+        )
+        df = df.drop(variantes_restantes)
+
+    return df
+
+
 def extraer_periodo(nombre_archivo):
     """
     Extrae el periodo del nombre del archivo
@@ -110,6 +159,8 @@ def leer_archivo_planilla(archivo_path, periodo):
         df = df.with_columns(
             pl.lit(periodo).alias("PERIODO")
         )
+
+        df = asegurar_columna_subsidio_maternidad(df)
         
         # Reorganizar para que PERIODO sea la primera columna
         columnas = ["PERIODO"] + [col for col in df.columns if col != "PERIODO"]
@@ -230,6 +281,7 @@ def consolidar_archivos(archivos, carpeta_trabajo):
     # Usar diagonal=True para manejar columnas diferentes entre archivos
     print(f"  - Concatenando archivos...")
     df_consolidado = pl.concat(dataframes_normalizados, how="diagonal")
+    df_consolidado = asegurar_columna_subsidio_maternidad(df_consolidado)
     
     print(f"  ✓ Consolidación completa: {len(df_consolidado):,} registros totales")
     print(f"  ✓ Total de columnas: {len(df_consolidado.columns)}")
