@@ -4,7 +4,9 @@ from pathlib import Path
 
 import polars as pl
 
-from src.modules.bd.steps.step3_flags_empleados import guardar_resultados as guardar_flags_bd
+from src.modules.bd.steps.step3_flags_empleados import (
+    guardar_resultados as guardar_flags_bd,
+)
 from src.modules.licencias.steps.step2_enriquecer_nomina import (
     guardar_resultados as guardar_nomina_enriquecida,
 )

@@ -29,8 +29,7 @@ def extract_document_date_from_filename(
     match = filename_regex.search(source.name)
     if not match:
         raise ValueError(
-            "Filename does not match expected pattern "
-            f"'{expected_pattern}'"
+            f"Filename does not match expected pattern '{expected_pattern}'"
         )
 
     raw_date = match.group("fecha")
@@ -45,7 +44,9 @@ def extract_document_date_from_filename(
 
 def has_document_date_fragment(file_path: Path | str) -> bool:
     """Returns True when the filename contains a DD.MM.YYYY date fragment."""
-    source_name = Path(file_path).name if not isinstance(file_path, Path) else file_path.name
+    source_name = (
+        Path(file_path).name if not isinstance(file_path, Path) else file_path.name
+    )
     return bool(DOCUMENT_DATE_FRAGMENT_REGEX.search(source_name))
 
 

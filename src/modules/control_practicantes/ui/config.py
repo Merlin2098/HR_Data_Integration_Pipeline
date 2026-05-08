@@ -3,12 +3,14 @@
 Configuración del ETL de Control de Practicantes
 Pipeline: Control Practicantes → Silver → Gold con Flags
 """
+
 from dataclasses import dataclass
 
 
 @dataclass
 class ETLConfig:
     """Metadata del ETL"""
+
     id: str
     name: str
     icon: str
@@ -24,5 +26,5 @@ CONFIG = ETLConfig(
     icon="👨‍🎓",
     description="Pipeline: Control Practicantes → Silver → Gold con Flags",
     enabled=True,
-    order=2  # Después de nómina (order=1)
+    order=2,  # Después de nómina (order=1)
 )

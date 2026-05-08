@@ -11,7 +11,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VENV_DIR = REPO_ROOT / ".venv"
-VENV_PYTHON = VENV_DIR / ("Scripts/python.exe" if sys.platform.startswith("win") else "bin/python")
+VENV_PYTHON = VENV_DIR / (
+    "Scripts/python.exe" if sys.platform.startswith("win") else "bin/python"
+)
 ENVIRONMENT_PROFILES = {"local", "cloud"}
 
 
@@ -22,7 +24,9 @@ def ensure_venv() -> None:
     builder.create(VENV_DIR)
 
 
-def remove_readonly(func, path, exc_info) -> None:  # pragma: no cover - platform callback
+def remove_readonly(
+    func, path, exc_info
+) -> None:  # pragma: no cover - platform callback
     Path(path).chmod(stat.S_IWRITE)
     func(path)
 
@@ -30,7 +34,9 @@ def remove_readonly(func, path, exc_info) -> None:  # pragma: no cover - platfor
 def reset_venv() -> None:
     resolved = VENV_DIR.resolve()
     if resolved == REPO_ROOT.resolve() or resolved.parent != REPO_ROOT.resolve():
-        raise RuntimeError(f"Refusing to remove unexpected environment path: {resolved}")
+        raise RuntimeError(
+            f"Refusing to remove unexpected environment path: {resolved}"
+        )
     if VENV_DIR.exists():
         shutil.rmtree(VENV_DIR, onexc=remove_readonly)
 
@@ -54,8 +60,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Create the local virtual environment if needed and install pip requirements."
     )
-    parser.add_argument("--profile", choices=sorted(ENVIRONMENT_PROFILES), default="local")
-    parser.add_argument("--dry-run", action="store_true", help="Print the install command without executing it.")
+    parser.add_argument(
+        "--profile", choices=sorted(ENVIRONMENT_PROFILES), default="local"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the install command without executing it.",
+    )
     return parser.parse_args()
 
 
@@ -110,7 +122,9 @@ def main() -> None:
     except subprocess.CalledProcessError as error:
         if not is_recoverable_install_error(error):
             raise
-        print("pip install hit an inconsistent .venv. Rebuilding the environment and retrying...")
+        print(
+            "pip install hit an inconsistent .venv. Rebuilding the environment and retrying..."
+        )
         reset_venv()
         ensure_venv()
         run_install(command)

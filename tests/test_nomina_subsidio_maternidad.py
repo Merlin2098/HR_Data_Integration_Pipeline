@@ -53,7 +53,17 @@ def test_leer_archivo_planilla_descarta_filas_de_totales_y_subtotales(tmp_path: 
     for idx, header in enumerate(headers, start=1):
         ws.cell(row=6, column=idx, value=header)
 
-    empleado = [1, "77071019", "445341", "ABANTO", "GALVAN", "ARIANA NICOLE", "DNI", "77071019", 1250.5]
+    empleado = [
+        1,
+        "77071019",
+        "445341",
+        "ABANTO",
+        "GALVAN",
+        "ARIANA NICOLE",
+        "DNI",
+        "77071019",
+        1250.5,
+    ]
     total = ["+ INGRESOS DEL MES", None, None, 24, None, None, None, None, 841894.06]
 
     for idx, value in enumerate(empleado, start=1):

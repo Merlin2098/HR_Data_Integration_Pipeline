@@ -2,12 +2,14 @@
 """
 Configuración del ETL de Nómina Régimen Minero
 """
+
 from dataclasses import dataclass
 
 
 @dataclass
 class ETLConfig:
     """Metadata del ETL"""
+
     id: str
     name: str
     icon: str
@@ -23,5 +25,5 @@ CONFIG = ETLConfig(
     icon="⛏️",
     description="Consolidación de planillas - Régimen Minero",
     enabled=True,
-    order=2
+    order=2,
 )

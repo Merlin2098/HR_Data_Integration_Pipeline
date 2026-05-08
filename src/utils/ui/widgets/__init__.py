@@ -2,6 +2,7 @@
 """
 Widgets reutilizables para interfaz
 """
+
 from .base_etl_widget import BaseETLWidget
 
-__all__ = ['BaseETLWidget']
+__all__ = ["BaseETLWidget"]

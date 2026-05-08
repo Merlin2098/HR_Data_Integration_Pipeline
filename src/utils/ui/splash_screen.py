@@ -1,6 +1,7 @@
 """
 Splash screen de inicio para mostrar progreso de carga de la UI.
 """
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QLabel, QProgressBar, QSplashScreen

@@ -2,12 +2,14 @@
 """
 Configuración del ETL de PDT - Relación de Ingresos
 """
+
 from dataclasses import dataclass
 
 
 @dataclass
 class ETLConfig:
     """Metadata del ETL"""
+
     id: str
     name: str
     icon: str
@@ -23,5 +25,5 @@ CONFIG = ETLConfig(
     icon="📋",
     description="Procesamiento de Relación de Ingresos (EMPLEADOS y PRACTICANTES)",
     enabled=True,
-    order=3
+    order=3,
 )

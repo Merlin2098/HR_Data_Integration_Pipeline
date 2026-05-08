@@ -3,12 +3,14 @@
 Configuración del ETL de Nómina con Licencias
 Pipeline completo: Nóminas + Licencias → Silver → Gold Enriquecido
 """
+
 from dataclasses import dataclass
 
 
 @dataclass
 class ETLConfig:
     """Metadata del ETL"""
+
     id: str
     name: str
     icon: str
@@ -24,5 +26,5 @@ CONFIG = ETLConfig(
     icon="📊",
     description="Pipeline completo: Nóminas + Licencias → Gold Enriquecido",
     enabled=True,
-    order=1
+    order=1,
 )

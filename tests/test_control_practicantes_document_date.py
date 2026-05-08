@@ -5,8 +5,12 @@ from pathlib import Path
 
 import polars as pl
 
-from src.modules.control_practicantes.steps.step1_controlpracticantes import validar_esquema
-from src.modules.control_practicantes.steps.step2_controlpracticantes import generar_gold_con_flags
+from src.modules.control_practicantes.steps.step1_controlpracticantes import (
+    validar_esquema,
+)
+from src.modules.control_practicantes.steps.step2_controlpracticantes import (
+    generar_gold_con_flags,
+)
 from src.utils.bd_document_date import (
     BD_DOCUMENT_DATE_COLUMN,
     append_control_practicantes_document_date_column,
@@ -16,15 +20,24 @@ from src.utils.validate_source import load_validation_contract, validate_excel_s
 
 
 def test_extract_control_practicantes_document_date_accepts_supported_extensions():
-    assert extract_control_practicantes_document_date(
-        Path("BD Practicantes 30.03.2026.xlsx")
-    ) == "2026-03-30"
-    assert extract_control_practicantes_document_date(
-        Path("BD Practicantes 30.03.2026.xlsm")
-    ) == "2026-03-30"
-    assert extract_control_practicantes_document_date(
-        Path("BD Practicantes 30.03.2026.xls")
-    ) == "2026-03-30"
+    assert (
+        extract_control_practicantes_document_date(
+            Path("BD Practicantes 30.03.2026.xlsx")
+        )
+        == "2026-03-30"
+    )
+    assert (
+        extract_control_practicantes_document_date(
+            Path("BD Practicantes 30.03.2026.xlsm")
+        )
+        == "2026-03-30"
+    )
+    assert (
+        extract_control_practicantes_document_date(
+            Path("BD Practicantes 30.03.2026.xls")
+        )
+        == "2026-03-30"
+    )
 
 
 def test_extract_control_practicantes_document_date_rejects_invalid_pattern():
@@ -40,7 +53,9 @@ def test_extract_control_practicantes_document_date_rejects_invalid_pattern():
 
 def test_extract_control_practicantes_document_date_rejects_invalid_calendar_date():
     try:
-        extract_control_practicantes_document_date(Path("BD Practicantes 31.02.2026.xlsx"))
+        extract_control_practicantes_document_date(
+            Path("BD Practicantes 31.02.2026.xlsx")
+        )
     except ValueError as exc:
         assert "Invalid document date" in str(exc)
     else:
@@ -107,8 +122,12 @@ def test_control_practicantes_gold_query_keeps_fecha_documento(tmp_path: Path):
         {
             "DNI": ["12345678"],
             "CONDICION": ["PRACTICANTE PROFESIONAL"],
-            "FECHA ING": [pl.Series("FECHA ING", ["2025-04-01"]).str.to_date("%Y-%m-%d")[0]],
-            "F. RENOVACION": [pl.Series("F. RENOVACION", ["2026-03-30"]).str.to_date("%Y-%m-%d")[0]],
+            "FECHA ING": [
+                pl.Series("FECHA ING", ["2025-04-01"]).str.to_date("%Y-%m-%d")[0]
+            ],
+            "F. RENOVACION": [
+                pl.Series("F. RENOVACION", ["2026-03-30"]).str.to_date("%Y-%m-%d")[0]
+            ],
             "SEDE": ["Lima"],
             "UNIVERSIDAD": ["UNI"],
             "JEFE INMEDIATO": ["Jefe"],

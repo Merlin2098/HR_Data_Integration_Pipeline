@@ -5,7 +5,9 @@ from datetime import date
 import polars as pl
 
 from src.modules.examen_retiro.steps.step2_gold import transformar_silver_a_gold
-from src.modules.pdt.steps.step3_exportar_practicantes import agregar_columna_enriquecida
+from src.modules.pdt.steps.step3_exportar_practicantes import (
+    agregar_columna_enriquecida,
+)
 from src.utils.month_name import MONTH_NAME_ENGLISH, add_month_name_column
 
 

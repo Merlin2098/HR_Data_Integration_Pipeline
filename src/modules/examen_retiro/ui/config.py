@@ -2,12 +2,14 @@
 """
 Configuración del ETL de Exámenes de Retiro
 """
+
 from dataclasses import dataclass
 
 
 @dataclass
 class ETLConfig:
     """Metadata del ETL"""
+
     id: str
     name: str
     icon: str
@@ -23,5 +25,5 @@ CONFIG = ETLConfig(
     icon="🏥",
     description="Procesamiento de Programación de Exámenes de Retiro (con enriquecimiento CC)",
     enabled=True,
-    order=4
+    order=4,
 )

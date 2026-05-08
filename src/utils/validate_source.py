@@ -46,7 +46,9 @@ class ValidationReport:
         self.errors.append(f"{source.name}: {message}")
 
     def error_summary(self) -> str:
-        lines = [f"Preflight validation failed for '{self.contract_id}' ({self.contract_name})"]
+        lines = [
+            f"Preflight validation failed for '{self.contract_id}' ({self.contract_name})"
+        ]
         lines.extend(f"- {error}" for error in self.errors)
         return "\n".join(lines)
 
@@ -90,7 +92,8 @@ def validate_excel_source(
 
     file_type = contract.get("file_type", {})
     expected_extensions = {
-        ext.lower() for ext in file_type.get("expected_extensions", list(EXCEL_EXTENSIONS))
+        ext.lower()
+        for ext in file_type.get("expected_extensions", list(EXCEL_EXTENSIONS))
     }
     if file_path.suffix.lower() not in expected_extensions:
         report.add_error(
@@ -104,7 +107,9 @@ def validate_excel_source(
     if filename_regex:
         filename_matches = bool(re.search(filename_regex, file_path.name))
         if not filename_matches:
-            report.add_error(file_path, f"Filename does not match regex: {filename_regex}")
+            report.add_error(
+                file_path, f"Filename does not match regex: {filename_regex}"
+            )
 
     contract_id = str(contract.get("id", "")).strip().lower()
     document_date_validator = DOCUMENT_DATE_VALIDATORS.get(contract_id)
@@ -168,7 +173,9 @@ def validate_excel_source(
             )
 
             required = (
-                list(required_cols) if required_cols is not None else _resolve_required_columns(cfg)
+                list(required_cols)
+                if required_cols is not None
+                else _resolve_required_columns(cfg)
             )
             missing_required = _missing_columns(required, header_values)
             if missing_required:
@@ -196,7 +203,9 @@ def validate_all_sources_for_etl(
 
     paths = _coerce_paths(inputs)
     if not paths:
-        aggregate.errors.append("No source files were provided for preflight validation")
+        aggregate.errors.append(
+            "No source files were provided for preflight validation"
+        )
         return aggregate
 
     for source in paths:
@@ -262,7 +271,9 @@ def _resolve_required_columns(sheet_cfg: dict[str, Any]) -> list[str]:
         if str(item).strip()
     }
     if excluded:
-        columns = [col for col in columns if _normalize_header_name(col) not in excluded]
+        columns = [
+            col for col in columns if _normalize_header_name(col) not in excluded
+        ]
 
     return columns
 
@@ -309,7 +320,9 @@ def _extract_columns_from_schema(
     return []
 
 
-def _get_schema_section(schema_json: dict[str, Any], source_cfg: dict[str, Any]) -> dict[str, Any]:
+def _get_schema_section(
+    schema_json: dict[str, Any], source_cfg: dict[str, Any]
+) -> dict[str, Any]:
     sheet_name = source_cfg.get("sheet_name")
     if sheet_name:
         hojas = schema_json.get("hojas", {})

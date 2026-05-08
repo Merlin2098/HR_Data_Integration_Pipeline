@@ -65,7 +65,9 @@ def uv_environment() -> dict[str, str]:
     return env
 
 
-def remove_readonly(func, path, exc_info) -> None:  # pragma: no cover - platform callback
+def remove_readonly(
+    func, path, exc_info
+) -> None:  # pragma: no cover - platform callback
     Path(path).chmod(stat.S_IWRITE)
     func(path)
 
@@ -73,7 +75,9 @@ def remove_readonly(func, path, exc_info) -> None:  # pragma: no cover - platfor
 def reset_venv() -> None:
     resolved = VENV_DIR.resolve()
     if resolved == REPO_ROOT.resolve() or resolved.parent != REPO_ROOT.resolve():
-        raise RuntimeError(f"Refusing to remove unexpected environment path: {resolved}")
+        raise RuntimeError(
+            f"Refusing to remove unexpected environment path: {resolved}"
+        )
     if VENV_DIR.exists():
         shutil.rmtree(VENV_DIR, onexc=remove_readonly)
 
@@ -85,7 +89,11 @@ def is_permission_sync_error(error: subprocess.CalledProcessError) -> bool:
     if error.stderr:
         text += error.stderr
     lowered = text.lower()
-    return "failed to remove directory" in lowered or "access denied" in lowered or "acceso denegado" in lowered
+    return (
+        "failed to remove directory" in lowered
+        or "access denied" in lowered
+        or "acceso denegado" in lowered
+    )
 
 
 def run(command: list[str], *, dry_run: bool) -> None:
@@ -120,7 +128,9 @@ def run_init(*, dry_run: bool, profile: str) -> None:
     except subprocess.CalledProcessError as error:
         if dry_run or not is_permission_sync_error(error):
             raise
-        print("uv sync hit a locked or inconsistent .venv. Rebuilding the environment and retrying...")
+        print(
+            "uv sync hit a locked or inconsistent .venv. Rebuilding the environment and retrying..."
+        )
         try:
             reset_venv()
         except OSError as reset_error:
@@ -160,7 +170,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("mode", choices=("init", "update", "reset"))
     parser.add_argument("--profile", choices=sorted(ENVIRONMENT_PROFILES))
-    parser.add_argument("--dry-run", action="store_true", help="Print the uv commands without executing them.")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the uv commands without executing them.",
+    )
     return parser.parse_args()
 
 

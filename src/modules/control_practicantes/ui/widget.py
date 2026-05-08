@@ -3,6 +3,7 @@
 Widget específico para ETL de Control de Practicantes
 Selecciona archivo Excel de control y valida estructura
 """
+
 import sys
 from pathlib import Path
 
@@ -17,26 +18,26 @@ from src.utils.ui.file_selector_qt import quick_file_select_qt
 
 class ControlPracticantesWidget(BaseETLWidget):
     """Widget para procesamiento de control de practicantes"""
-    
+
     def __init__(self):
         super().__init__(title="Procesamiento de Control de Practicantes")
-    
+
     def _get_worker_class(self):
         """Retorna la clase Worker de Control de Practicantes"""
         return ControlPracticantesWorker
-    
+
     def _get_file_filter(self) -> str:
         """Filtro para archivos Excel"""
         return "Archivos Excel (*.xlsx *.xls);;Todos los archivos (*.*)"
-    
+
     def _get_select_button_text(self) -> str:
         """Texto personalizado para botón de selección"""
         return "📄 Seleccionar Archivo de Control"
-    
+
     def _get_no_files_message(self) -> str:
         """Mensaje cuando no hay archivo seleccionado"""
         return "No hay archivo seleccionado. Seleccione el archivo de control de practicantes."
-    
+
     def _select_files(self):
         """
         SOBRESCRITURA: Selecciona UN archivo Excel
@@ -47,12 +48,12 @@ class ControlPracticantesWidget(BaseETLWidget):
             parent=self,
             title="Seleccionar archivo de control de practicantes",
             file_filter="Archivos Excel (*.xlsx *.xls);;Todos los archivos (*.*)",
-            cache_key="control_practicantes_archivo"
+            cache_key="control_practicantes_archivo",
         )
-        
+
         if not resultado:
             return
-        
+
         # quick_file_select_qt puede retornar lista o Path
         # Extraer el primer archivo si es lista
         if isinstance(resultado, list):
@@ -61,9 +62,9 @@ class ControlPracticantesWidget(BaseETLWidget):
             archivo = resultado[0]
         else:
             archivo = resultado
-        
+
         # Validar extensión
-        if archivo.suffix.lower() not in ['.xlsx', '.xls', '.xlsm']:
+        if archivo.suffix.lower() not in [".xlsx", ".xls", ".xlsm"]:
             self._log(f"⚠️  Archivo no es Excel: {archivo.name}")
             self.label_files.setText(
                 f"⚠️  Archivo seleccionado: {archivo.name}\n"
@@ -71,55 +72,56 @@ class ControlPracticantesWidget(BaseETLWidget):
             )
             self.btn_process.setEnabled(False)
             return
-        
+
         # Warning suave: solo alertar si el filename no trae fecha DD.MM.YYYY
         if not has_document_date_fragment(archivo):
-            self._log("⚠️  El nombre del archivo no contiene una fecha con formato DD.MM.YYYY")
-            
+            self._log(
+                "⚠️  El nombre del archivo no contiene una fecha con formato DD.MM.YYYY"
+            )
+
             mensaje_warning = f"⚠️  Archivo: {archivo.name}\n\n"
             mensaje_warning += "⚠️  Advertencia: El nombre del archivo no contiene\n"
             mensaje_warning += "   una fecha en formato 'DD.MM.YYYY'.\n\n"
-            mensaje_warning += f"   ¿Desea continuar de todas formas?"
-            
+            mensaje_warning += "   ¿Desea continuar de todas formas?"
+
             self.label_files.setText(mensaje_warning)
-            
+
             # Permitir continuar pero con advertencia
             self.archivos_seleccionados = [archivo]
             self.btn_process.setEnabled(True)
             self.btn_clear.setEnabled(True)
             return
-        
+
         # VALIDAR PESTAÑA: Debe existir pestaña "Practicantes"
         try:
             import openpyxl
+
             wb = openpyxl.load_workbook(archivo, read_only=True)
-            
+
             tiene_practicantes = "Practicantes" in wb.sheetnames
             wb.close()
-            
+
             if not tiene_practicantes:
-                self._log(f"❌ El archivo no contiene la pestaña 'Practicantes'")
-                
+                self._log("❌ El archivo no contiene la pestaña 'Practicantes'")
+
                 mensaje_error = f"❌ Archivo: {archivo.name}\n\n"
-                mensaje_error += f"❌ Error: No se encontró la pestaña 'Practicantes'\n"
-                mensaje_error += f"   El archivo debe contener una hoja llamada\n"
-                mensaje_error += f"   'Practicantes' con los datos a procesar."
-                
+                mensaje_error += "❌ Error: No se encontró la pestaña 'Practicantes'\n"
+                mensaje_error += "   El archivo debe contener una hoja llamada\n"
+                mensaje_error += "   'Practicantes' con los datos a procesar."
+
                 self.label_files.setText(mensaje_error)
                 self.btn_process.setEnabled(False)
                 return
-            
+
         except Exception as e:
             self._log(f"❌ Error al validar archivo: {e}")
-            self.label_files.setText(
-                f"❌ Error al validar archivo:\n{str(e)}"
-            )
+            self.label_files.setText(f"❌ Error al validar archivo:\n{str(e)}")
             self.btn_process.setEnabled(False)
             return
-        
+
         # Archivo válido - guardar
         self.archivos_seleccionados = [archivo]
-        
+
         # Actualizar UI con validación exitosa
         self.label_files.setText(
             f"✓ Archivo seleccionado:\n"
@@ -132,9 +134,9 @@ class ControlPracticantesWidget(BaseETLWidget):
             f"📁 La estructura silver/gold/ se creará en:\n"
             f"  {archivo.parent.name}/"
         )
-        
+
         self.btn_process.setEnabled(True)
         self.btn_clear.setEnabled(True)
-        
+
         self._log(f"📄 Archivo seleccionado: {archivo.name}")
-        self._log(f"✓ Validación exitosa")
+        self._log("✓ Validación exitosa")

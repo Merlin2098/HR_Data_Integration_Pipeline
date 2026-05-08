@@ -2,12 +2,14 @@
 """
 Configuración del ETL de Base de Datos Consolidada
 """
+
 from dataclasses import dataclass
 
 
 @dataclass
 class ETLConfig:
     """Metadata del ETL"""
+
     id: str
     name: str
     icon: str
@@ -23,5 +25,5 @@ CONFIG = ETLConfig(
     icon="🗄️",
     description="Procesamiento completo: Bronze→Silver→Gold + Centros de Costo + Flags",
     enabled=True,
-    order=4
+    order=4,
 )

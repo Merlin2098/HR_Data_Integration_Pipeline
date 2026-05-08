@@ -8,4 +8,4 @@ from .config import CONFIG
 from .widget import BDWidget
 from .worker import BDWorker
 
-__all__ = ['CONFIG', 'BDWidget', 'BDWorker']
+__all__ = ["CONFIG", "BDWidget", "BDWorker"]
