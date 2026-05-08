@@ -140,23 +140,20 @@ Additional project documentation lives under `docs/`.
 git clone https://github.com/Merlin2098/ETL_HumanResources_Dashboard
 cd ETL_HumanResources_Dashboard
 
-python -m venv .venv
-.venv\Scripts\activate
-
-pip install -r requirements.txt
+py -3 -m uv sync --extra local --group dev-local
 pre-commit install
 ```
 
 ## Run the Application
 
 ```bash
-python etl_manager.py
+py -3 -m uv run python etl_manager.py
 ```
 
 ## Build the Executable
 
 ```bash
-python generar_exe.py
+py -3 -m uv run python generar_exe.py
 ```
 
 The build script packages the application, static assets, validation contracts, and pipeline definitions into a Windows-ready distribution folder.

@@ -58,8 +58,8 @@ def validar_entorno_virtual():
     print("=" * 60)
 
     if sys.prefix == sys.base_prefix:
-        print("ERROR: No estas dentro de un entorno virtual (venv).")
-        print("Activa uno antes de continuar.")
+        print("ERROR: No estas dentro del entorno virtual del proyecto.")
+        print("Ejecuta el script desde '.venv' o con 'py -3 -m uv run python generar_exe.py'.")
         sys.exit(1)
 
     print(f"OK entorno virtual detectado: {sys.prefix}\n")
