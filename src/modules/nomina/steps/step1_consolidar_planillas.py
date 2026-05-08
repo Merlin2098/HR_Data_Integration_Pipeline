@@ -17,6 +17,16 @@ import traceback
 
 
 SUBSIDIO_MATERNIDAD_COL = "SUBSIDIO MATERNIDAD"
+MARCADORES_TOTALES_SUBTOTALES = (
+    "ingresos del mes",
+    "descuentos del mes",
+    "aportaciones del mes",
+    "total ingresos",
+    "total descuentos",
+    "total aportaciones",
+    "subtotal",
+    "totales",
+)
 
 
 def _normalizar_header_para_match(nombre_columna):
@@ -63,6 +73,30 @@ def asegurar_columna_subsidio_maternidad(df):
         df = df.drop(variantes_restantes)
 
     return df
+
+
+def es_fila_totales_o_subtotales(row):
+    """
+    Detecta filas de resumen que no representan empleados.
+
+    Estas filas suelen aparecer al final de la planilla con textos como
+    "+ INGRESOS DEL MES" en la primera celda.
+    """
+    primera_celda = row[0] if len(row) > 0 else None
+
+    if primera_celda is None or not isinstance(primera_celda, str):
+        return False
+
+    primera_celda_normalizada = re.sub(r"^[+\-*\s]+", "", primera_celda.strip())
+    primera_celda_normalizada = _normalizar_header_para_match(primera_celda_normalizada)
+
+    if not primera_celda_normalizada:
+        return False
+
+    return any(
+        marcador in primera_celda_normalizada
+        for marcador in MARCADORES_TOTALES_SUBTOTALES
+    )
 
 
 def extraer_periodo(nombre_archivo):
@@ -135,6 +169,8 @@ def leer_archivo_planilla(archivo_path, periodo):
                 if primera_celda is None:
                     continue
                 if isinstance(primera_celda, str) and len(primera_celda) > 20:
+                    continue
+                if es_fila_totales_o_subtotales(row):
                     continue
                     
                 datos.append(list(row[:len(encabezados)]))
