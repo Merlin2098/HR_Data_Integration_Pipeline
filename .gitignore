@@ -1,69 +1,86 @@
-# Virtual environments
-.venv/
-venv/
-.vscode/
-
-# Build and distribution
-build/
-dist/
-spec/
-
-# Logs
-logs/
-*.log
-
-# Specific files
-config/json/path_cache.json
-.claude/
-data/
-.pre-commit-config.yaml
-assets/config/path_cache.json
-
-# __pycache__ and Python temp files
+# =========================
+# 🐍 Python
+# =========================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Tool cache
-*.egg-info/
-.eggs/
-.cache/
+# Virtual environments
+.venv/
+venv/
+
+# Python tooling caches
 .mypy_cache/
 .pytest_cache/
+pytest-cache-files-*/
+.pytest-tmp/
+.ruff_cache/
 
-# PyInstaller configuration
-*.spec
+# Build / packaging
+build/
+dist/
+spec/
 
-# Operating systems
+# =========================
+# 🧪 Logs & runtime artifacts
+# =========================
+logs/
+*.log
+
+# Custom artifacts (zips, outputs)
+artifacts/*.zip
+
+# =========================
+# 🏗️ Terraform
+# =========================
+# Terraform core
+.terraform/
+**/.terraform/
+
+# State files
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+tfplan-artifact
+tfplan-destroy
+
+# Crash logs
+crash.log
+
+# Terraform local backend / overrides
+backend.tf
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# =========================
+# 🔐 Terraform variables (SENSITIVE)
+# =========================
+*.tfvars
+*.auto.tfvars
+
+# Allow examples
+!*.example
+
+# =========================
+# 🔑 Environment variables
+# =========================
+.env
+.env.*
+!infra/env/.env.example
+# =========================
+# 🛠️ IDE / Editor
+# =========================
+.vscode/
+
+# =========================
+# 💻 OS files
+# =========================
 .DS_Store
 Thumbs.db
 
-# Tinker v2 framework (portable - not part of host project)
-agents2/engine/
-agents2/runtime/
-agents2/knowledge/
-agents2/tools/
-agents2/hooks/
-agents2/instructions/
-agents2/rules.md
-.githooks/
-.gitattributes
-agent_framework_config.yaml
-AGENTS.md
-agent.md
-.pre-commit-config.yaml
-
-# Tinker v2 generated runtime state
-.tinker/active_kernels.yaml
-.tinker/architecture_metrics.yaml
-.tinker/capability_map.yaml
-.tinker/context_bundle.yaml
-.tinker/context_graph.json
-.tinker/dependencies_graph.json
-.tinker/dependencies_report.md
-.tinker/project_metadata.meta.json
-.tinker/project_metadata.yaml
-.tinker/skills_registry.json
-.tinker/treemap.md
-.tinker/generated_skill_wrappers/
+.ai/
+ai/

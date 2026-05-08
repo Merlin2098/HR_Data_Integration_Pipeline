@@ -1,0 +1,54 @@
+[project]
+name = "aws-terraform-template"
+version = "0.1.0"
+description = "AWS and Terraform data engineering template"
+requires-python = ">=3.11"
+dependencies = [
+    "jsonschema",
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "python-dateutil",
+    "pyyaml",
+    "sqlalchemy",
+]
+
+[project.optional-dependencies]
+local = [
+    "great-expectations; python_version < '3.14'",
+    "duckdb",
+    "fastexcel",
+    "openpyxl",
+    "pathspec",
+    "polars",
+    "psycopg2-binary",
+    "pyside6",
+    "pyinstaller",
+    "setuptools",
+    "wheel",
+    "xlsxwriter",
+]
+
+cloud = [
+    "awswrangler",
+    "boto3",
+]
+
+[dependency-groups]
+dev-local = [
+    "faker",
+    "hypothesis",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+
+dev-cloud = [
+    "checkov",
+    "moto",
+    "tftest",
+]
+
+[tool.uv]
+package = false
