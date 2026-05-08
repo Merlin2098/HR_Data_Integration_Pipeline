@@ -563,12 +563,19 @@ class ExamenRetiroWorker(QThread):
 
             # ============ RESULTADO FINAL ============
             self.timers["total"] = time.time() - tiempo_inicio_step1
-
-            resultado["success"] = True
             resultado["timers"] = self.timers
+
+            if "error" in resultado.get("step3", {}):
+                resultado["success"] = False
+                resultado["error"] = (
+                    "No se pudo generar examenes_retiro_gold_enriquecido.parquet"
+                )
+                resultado["error_details"] = resultado["step3"]["error_details"]
+                return resultado
 
             # Mensaje resumen
             if "step3" in resultado and "registros" in resultado["step3"]:
+                resultado["success"] = True
                 stats = resultado["step3"]["stats"]
                 mensaje = (
                     f"ETL completado exitosamente:\n"
@@ -582,6 +589,7 @@ class ExamenRetiroWorker(QThread):
                     f"    - Step 3: {self.logger.format_duration(self.timers['step3'])}"
                 )
             elif "step2" in resultado and "registros" in resultado["step2"]:
+                resultado["success"] = True
                 mensaje = (
                     f"ETL completado (sin Step 3):\n"
                     f"  • Silver: {resultado['step1']['registros']:,} registros\n"
@@ -589,6 +597,7 @@ class ExamenRetiroWorker(QThread):
                     f"  ⏱️ Tiempo total: {self.logger.format_duration(self.timers['total'])}"
                 )
             else:
+                resultado["success"] = True
                 mensaje = (
                     f"Procesamiento Silver completado:\n"
                     f"  • Registros: {resultado['step1']['registros']:,}\n"

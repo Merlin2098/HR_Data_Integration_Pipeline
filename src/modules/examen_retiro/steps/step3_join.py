@@ -190,21 +190,19 @@ def ejecutar_join_sql(
     conn = duckdb.connect(":memory:")
 
     try:
-        # Registrar DataFrames como tablas en DuckDB
-        conn.register("examenes", df_examenes)
-        conn.register("cc_actual", df_cc_actual)
-        conn.register("cc_old", df_cc_old)
+        # Registrar DataFrames como tablas en DuckDB usando Arrow para evitar pandas
+        conn.register("examenes", df_examenes.to_arrow())
+        conn.register("cc_actual", df_cc_actual.to_arrow())
+        conn.register("cc_old", df_cc_old.to_arrow())
 
         print("  ✓ Tablas registradas en DuckDB")
 
-        # Ejecutar query
-        resultado = conn.execute(query).df()
+        # Ejecutar query y materializar resultado como Arrow -> Polars
+        resultado = conn.execute(query).to_arrow_table()
+        df_resultado = pl.from_arrow(resultado)
 
         print("  ✓ JOIN ejecutado exitosamente")
-        print(f"  ✓ Registros resultantes: {len(resultado):,}")
-
-        # Convertir a Polars
-        df_resultado = pl.from_pandas(resultado)
+        print(f"  ✓ Registros resultantes: {len(df_resultado):,}")
 
         return df_resultado
 

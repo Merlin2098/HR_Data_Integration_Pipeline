@@ -142,11 +142,13 @@ class NominaWorker(BaseETLWorker):
                     f"\n📊 Outputs generados:\n"
                     f"  • Silver: Planilla Metso Consolidado.parquet\n"
                     f"  • Silver: licencias_consolidadas.parquet\n"
-                    f"  • Gold: Planilla_Metso_Consolidado.parquet\n"
-                    f"  • Gold: Planilla Metso BI_Gold_Con_Licencias.parquet"
+                    f"  • Gold base: Planilla_Metso_Consolidado.parquet\n"
+                    f"  • Gold publicado: Planilla_Metso_Consolidado.parquet enriquecido con licencias"
                 )
                 if self.export_excel_gold:
-                    mensaje += "\n  • Gold: Planilla Metso BI_Gold_Con_Licencias.xlsx"
+                    mensaje += (
+                        "\n  • Gold publicado: Planilla_Metso_Consolidado.xlsx enriquecido con licencias"
+                    )
 
                 resultado["mensaje"] = mensaje
                 self.logger.info(mensaje)

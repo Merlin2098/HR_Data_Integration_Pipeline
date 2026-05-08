@@ -50,8 +50,8 @@ stages:
       # ruta_nomina, ruta_licencias se pasan dinámicamente
     outputs:
       - name: "parquet_nomina_enriquecida"
-        path_template: "${output_dir}/gold/actual/Planilla Metso BI_Gold_Con_Licencias.parquet"
+        path_template: "${output_dir}/gold/actual/Planilla_Metso_Consolidado.parquet"
         required: true
       - name: "excel_nomina_enriquecida"
-        path_template: "${output_dir}/gold/actual/Planilla Metso BI_Gold_Con_Licencias.xlsx"
+        path_template: "${output_dir}/gold/actual/Planilla_Metso_Consolidado.xlsx"
         required: false

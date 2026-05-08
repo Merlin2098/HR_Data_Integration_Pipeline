@@ -6,7 +6,7 @@ Descripción: Enriquece la nómina Gold con datos de licencias
 Arquitectura:
 - Input 1: /gold/nomina/actual/Planilla_Metso_Consolidado.parquet
 - Input 2: /silver/licencias_consolidadas.parquet
-- Output: /gold/nomina/actual/Planilla Metso BI_Gold_Con_Licencias.parquet|xlsx
+- Output: /gold/nomina/actual/Planilla_Metso_Consolidado.parquet|xlsx enriquecido
 
 Columnas agregadas:
 - MOTIVO_CON_GOCE: Motivos de licencias con goce (concatenados con " | ")
@@ -132,7 +132,7 @@ def guardar_resultados(
     export_excel: bool = False,
 ):
     """
-    Guarda el DataFrame enriquecido en Gold solo en actual/.
+    Guarda el DataFrame enriquecido publicándolo sobre el Gold principal en actual/.
     La estructura se crea en la misma ubicación del archivo de nómina.
 
     Args:
@@ -147,7 +147,7 @@ def guardar_resultados(
     print("\n💾 Guardando resultados en Gold...")
     print(f"  📁 Carpeta: {carpeta_nomina}")
 
-    nombre_base = "Planilla Metso BI_Gold_Con_Licencias"
+    nombre_base = ruta_nomina.stem
 
     # Archivo actual (sin timestamp para Power BI)
     print("\n  - Guardando actual/parquet...", end="", flush=True)
@@ -236,9 +236,9 @@ def main():
         print("\n✓ Procesamiento completado exitosamente")
 
         print("\n📂 Archivos generados:")
-        print("  - actual/Planilla Metso BI_Gold_Con_Licencias.parquet")
+        print("  - actual/Planilla_Metso_Consolidado.parquet")
         if rutas["excel"] is not None:
-            print("  - actual/Planilla Metso BI_Gold_Con_Licencias.xlsx")
+            print("  - actual/Planilla_Metso_Consolidado.xlsx")
 
         print(f"\n⏱️  Tiempo de ejecución: {tiempo_total:.2f}s")
 
@@ -333,7 +333,7 @@ def procesar_sin_gui(
         # Obtener carpeta base desde archivo de nómina
         carpeta_actual = ruta_nomina.parent
 
-        nombre_base = "Planilla Metso BI_Gold_Con_Licencias"
+        nombre_base = ruta_nomina.stem
 
         # Archivo actual (sin timestamp)
         ruta_parquet_actual = carpeta_actual / f"{nombre_base}.parquet"
@@ -346,9 +346,9 @@ def procesar_sin_gui(
             lambda path: df_enriquecido.write_excel(path),
         )
 
-        print(f"   ✓ Parquet actual: {ruta_parquet_actual.name}")
+        print(f"   ✓ Gold principal enriquecido: {ruta_parquet_actual.name}")
         if ruta_excel_actual is not None:
-            print(f"   ✓ Excel: {ruta_excel_actual.name}")
+            print(f"   ✓ Excel principal enriquecido: {ruta_excel_actual.name}")
         else:
             print("   ℹ️ Excel omitido (exportación opcional desactivada)")
 
