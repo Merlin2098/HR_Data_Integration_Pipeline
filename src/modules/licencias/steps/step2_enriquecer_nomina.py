@@ -335,7 +335,7 @@ def procesar_sin_gui(
 
         nombre_base = ruta_nomina.stem
 
-        # Archivo actual (sin timestamp)
+        # Archivo actual (sin timestamp) — sobreescribe el Gold base
         ruta_parquet_actual = carpeta_actual / f"{nombre_base}.parquet"
         df_enriquecido.write_parquet(ruta_parquet_actual, compression="snappy")
 
@@ -352,10 +352,27 @@ def procesar_sin_gui(
         else:
             print("   ℹ️ Excel omitido (exportación opcional desactivada)")
 
+        # Archivo BI con nombre dedicado para Power BI / consumo externo
+        nombre_bi = "Planilla_Metso_BI_Gold_Con_Licencias"
+        ruta_parquet_bi = carpeta_actual / f"{nombre_bi}.parquet"
+        df_enriquecido.write_parquet(ruta_parquet_bi, compression="snappy")
+        print(f"   ✓ Gold BI generado: {ruta_parquet_bi.name}")
+
+        ruta_excel_bi = carpeta_actual / f"{nombre_bi}.xlsx"
+        ruta_excel_bi = maybe_write_excel(
+            ruta_excel_bi,
+            export_excel_gold,
+            lambda path: df_enriquecido.write_excel(path),
+        )
+        if ruta_excel_bi is not None:
+            print(f"   ✓ Excel BI generado: {ruta_excel_bi.name}")
+
         return {
             "success": True,
             "parquet_actual": ruta_parquet_actual,
+            "parquet_bi": ruta_parquet_bi,
             "excel": ruta_excel_actual,
+            "excel_bi": ruta_excel_bi,
             "registros": len(df_enriquecido),
             "registros_con_goce": registros_con_goce,
             "registros_sin_goce": registros_sin_goce,

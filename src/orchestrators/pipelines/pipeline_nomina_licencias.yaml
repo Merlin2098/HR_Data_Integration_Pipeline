@@ -52,6 +52,12 @@ stages:
       - name: "parquet_nomina_enriquecida"
         path_template: "${output_dir}/gold/actual/Planilla_Metso_Consolidado.parquet"
         required: true
+      - name: "parquet_bi_con_licencias"
+        path_template: "${output_dir}/gold/actual/Planilla_Metso_BI_Gold_Con_Licencias.parquet"
+        required: true
       - name: "excel_nomina_enriquecida"
         path_template: "${output_dir}/gold/actual/Planilla_Metso_Consolidado.xlsx"
+        required: false
+      - name: "excel_bi_con_licencias"
+        path_template: "${output_dir}/gold/actual/Planilla_Metso_BI_Gold_Con_Licencias.xlsx"
         required: false

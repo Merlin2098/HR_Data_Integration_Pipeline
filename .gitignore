@@ -86,3 +86,4 @@ Thumbs.db
 ai/
 data/
 assets/config/path_cache.json
+.claude/
