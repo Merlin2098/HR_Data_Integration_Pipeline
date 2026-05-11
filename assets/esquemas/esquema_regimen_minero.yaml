@@ -1,8 +1,8 @@
 metadata:
-  version: '1.6'
+  version: '1.7'
   capa: gold
   fecha_creacion: '2025-01-06'
-  fecha_actualizacion: '2026-03-20'
+  fecha_actualizacion: '2026-05-11'
   descripcion: Esquema de datos para la capa gold - Régimen Minero - columnas base del parquet silver (sin columnas enriquecidas).
     Incluye horas extras simples y montos de horas extra
 schema:
@@ -75,6 +75,24 @@ schema:
     min_value: 0
     precision: 2
     description: Días de descanso médico en el periodo
+  DIAS GOCE HABER(D):
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días con goce de haber en el periodo
+  DIAS DIST.LIC.S.GH:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días de licencia sin goce de haber en el periodo
+  LICENCIA GOCE HABER:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Monto de licencia con goce de haber en el periodo
   '# HRS EXTRAS SIMP.25%':
     type: float
     nullable: true
@@ -150,8 +168,9 @@ constraints:
   - DIAS TRABAJADOS debe ser mayor o igual a 0 y menor o igual a 31
   - FECHA DE INGRESO debe ser anterior a PERIODO si ambas existen
   - Los montos (TOTAL INGRESOS, TOTAL DESCUENTOS, TOTAL APORTACIONES, NETO) deben ser no negativos
-  - 'DIAS DESC MEDICO (P), # HRS EXTRAS SIMP.25%, # HRS EXTRAS SIMP.35%, HORAS EXTRAS 25%, HORAS EXTRAS 35%, #HRS EXTRAS DOBLES,
-    HORAS EXTRAS 100%, DESCANSO MEDICO deben ser no negativos'
+  - 'DIAS DESC MEDICO (P), DIAS GOCE HABER(D), DIAS DIST.LIC.S.GH, LICENCIA GOCE HABER, # HRS EXTRAS SIMP.25%,
+    # HRS EXTRAS SIMP.35%, HORAS EXTRAS 25%, HORAS EXTRAS 35%, #HRS EXTRAS DOBLES, HORAS EXTRAS 100%, DESCANSO MEDICO
+    deben ser no negativos'
 transformations:
   column_naming: original
   date_format: YYYY-MM-DD
@@ -175,6 +194,9 @@ column_order_base:
 - FECHA DE INGRESO
 - DIAS TRABAJADOS
 - DIAS DESC MEDICO (P)
+- DIAS GOCE HABER(D)
+- DIAS DIST.LIC.S.GH
+- LICENCIA GOCE HABER
 - '# HRS EXTRAS SIMP.25%'
 - '# HRS EXTRAS SIMP.35%'
 - HORAS EXTRAS 25%
@@ -203,6 +225,9 @@ column_order_final:
 - FECHA DE INGRESO
 - DIAS TRABAJADOS
 - DIAS DESC MEDICO (P)
+- DIAS GOCE HABER(D)
+- DIAS DIST.LIC.S.GH
+- LICENCIA GOCE HABER
 - '# HRS EXTRAS SIMP.25%'
 - '# HRS EXTRAS SIMP.35%'
 - HORAS EXTRAS 25%
