@@ -167,3 +167,16 @@ transformations:
   date_format: YYYY-MM-DD
   string_trimming: true
   null_handling: explicit
+dynamic_columns:
+  - pattern: '^DIAS SUB'
+    total_column: 'DIAS SUBSIDIOS TOTAL'
+    type: float
+    nullable: true
+    include_static_matches: true
+    description: Suma de dias de subsidio detectados dinamicamente e incluidos en el esquema estatico
+  - pattern: '^SUB'
+    total_column: 'SUBSIDIOS TOTAL'
+    type: float
+    nullable: true
+    include_static_matches: true
+    description: Suma de montos de subsidios detectados dinamicamente e incluidos en el esquema estatico

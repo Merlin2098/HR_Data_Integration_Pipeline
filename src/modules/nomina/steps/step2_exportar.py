@@ -5,6 +5,8 @@ Guarda salida Gold únicamente en carpeta actual/
 REFACTORIZADO para compatibilidad con worker UI y estructura simplificada
 """
 
+import re
+
 import polars as pl
 from pathlib import Path
 from datetime import datetime
@@ -186,6 +188,112 @@ def validar_constraints(df, schema):
     return errores, warnings
 
 
+def resolver_columnas_dinamicas(df_silver, df_gold, esquema):
+    """
+    Detecta columnas dinámicas en silver por regex, las agrega a gold,
+    y crea columnas totalizadoras al final usando DuckDB.
+    Exclusión mutua por orden de definición en dynamic_columns.
+    """
+    import duckdb
+
+    grupos = esquema.get("dynamic_columns", [])
+    if not grupos:
+        return df_gold
+
+    columnas_schema = set(esquema["schema"].keys())
+    columnas_ya_reclamadas = set()
+    todas_las_dinamicas = []
+
+    print("\n🔍 Resolviendo columnas dinámicas...")
+
+    resultados_grupos = []
+    for grupo in grupos:
+        patron_str     = grupo["pattern"]
+        total_col      = grupo["total_column"]
+        include_static = grupo.get("include_static_matches", False)
+        patron         = re.compile(patron_str)
+
+        # Columnas dinámicas: en silver, no en schema, no reclamadas por grupo anterior
+        cols_dinamicas = [
+            col for col in df_silver.columns
+            if patron.match(col)
+            and col not in columnas_schema
+            and col not in columnas_ya_reclamadas
+        ]
+
+        # Columnas estáticas del schema que coinciden con el patrón (ya en df_gold)
+        cols_estaticas = []
+        if include_static:
+            cols_estaticas = [
+                col for col in df_gold.columns
+                if patron.match(col)
+                and col not in columnas_ya_reclamadas
+            ]
+
+        # Las dinámicas son reclamadas exclusivamente; las estáticas son lectura compartida
+        columnas_ya_reclamadas.update(cols_dinamicas)
+        todas_las_dinamicas.extend(cols_dinamicas)
+
+        resultados_grupos.append({
+            "total_col": total_col,
+            "cols_estaticas": cols_estaticas,
+            "cols_dinamicas": cols_dinamicas,
+        })
+
+        cols_para_suma = cols_estaticas + cols_dinamicas
+        print(f"  + {total_col}: {len(cols_para_suma)} col(s) "
+              f"({len(cols_estaticas)} estáticas, {len(cols_dinamicas)} dinámicas)")
+
+    # Extender df_gold con las columnas dinámicas tomadas del silver
+    df_gold_extendido = df_gold
+    for col in todas_las_dinamicas:
+        df_gold_extendido = df_gold_extendido.with_columns(
+            df_silver[col].cast(pl.Float64, strict=False).alias(col)
+        )
+
+    # Generar totales vía DuckDB con columnas agrupadas junto a su total
+    con = duckdb.connect(":memory:")
+    try:
+        con.register("gold", df_gold_extendido.to_arrow())
+
+        # Columnas que pertenecen a algún grupo (estáticas o dinámicas)
+        cols_en_grupos = set()
+        for g in resultados_grupos:
+            cols_en_grupos.update(g["cols_estaticas"])
+            cols_en_grupos.update(g["cols_dinamicas"])
+
+        # Columnas que no participan en ningún grupo (orden original preservado)
+        cols_neutras = [col for col in df_gold_extendido.columns if col not in cols_en_grupos]
+
+        # Por cada grupo: estáticas + dinámicas + total (bloque contiguo)
+        bloques_grupos = []
+        for g in resultados_grupos:
+            bloque = g["cols_estaticas"] + g["cols_dinamicas"]
+            if bloque:
+                terminos = " + ".join(
+                    f'COALESCE(CAST("{c}" AS DOUBLE), 0.0)' for c in bloque
+                )
+                bloque_sql = [f'"{c}"' for c in bloque] + [f'({terminos}) AS "{g["total_col"]}"']
+            else:
+                bloque_sql = [f'NULL::DOUBLE AS "{g["total_col"]}"']
+            bloques_grupos.append(bloque_sql)
+
+        # SELECT: neutras → bloque grupo 1 → bloque grupo 2 → ...
+        select_parts = (
+            [f'"{c}"' for c in cols_neutras]
+            + [expr for bloque in bloques_grupos for expr in bloque]
+        )
+
+        query = f"SELECT {', '.join(select_parts)} FROM gold"
+
+        resultado = con.execute(query).fetch_arrow_table()
+        df_resultado = pl.from_arrow(resultado)
+    finally:
+        con.close()
+
+    return df_resultado
+
+
 def generar_excel_visualizacion(df, ruta_salida):
     """Genera Excel con formato para visualización"""
     from openpyxl import Workbook
@@ -293,6 +401,9 @@ def seleccionar_y_convertir_columnas(df_silver, esquema):
 
     # Agregar columna NOMBRE_MES
     df_gold = agregar_nombre_mes(df_gold)
+
+    # Detectar columnas dinámicas por regex y agregar totalizadoras al final
+    df_gold = resolver_columnas_dinamicas(df_silver, df_gold, esquema)
 
     # Validar constraints (solo warnings, no detiene ejecución)
     errores, warnings = validar_constraints(df_gold, esquema)
