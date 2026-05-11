@@ -272,7 +272,7 @@ def guardar_resultados(
     print(f"  📁 Carpeta Histórico: {carpeta_historico}")
 
     # === ARCHIVOS ACTUALES (sin timestamp) ===
-    nombre_actual = "practicante_gold"
+    nombre_actual = "ingresos_practicantes_gold"
     ruta_parquet_actual = carpeta_gold / f"{nombre_actual}.parquet"
     ruta_excel_actual = carpeta_gold / f"{nombre_actual}.xlsx"
 
@@ -293,7 +293,7 @@ def guardar_resultados(
         print("    - Excel actual omitido (exportación opcional desactivada)")
 
     # === ARCHIVOS HISTÓRICOS (con timestamp) ===
-    nombre_historico = f"practicante_gold_{timestamp}"
+    nombre_historico = f"ingresos_practicantes_gold_{timestamp}"
     ruta_parquet_historico = carpeta_historico / f"{nombre_historico}.parquet"
     ruta_excel_historico = carpeta_historico / f"{nombre_historico}.xlsx"
 
