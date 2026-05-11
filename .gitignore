@@ -82,8 +82,14 @@ override.tf.json
 .DS_Store
 Thumbs.db
 
+#Local project artifacts
 .ai/
+docs/prompt
+
+# Missing entries from template .gitignore
 ai/
+specs/template/
 data/
+/prompt/
+.claude/settings.local.json
 assets/config/path_cache.json
-.claude/

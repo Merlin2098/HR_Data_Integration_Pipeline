@@ -23,6 +23,8 @@ Use:
 * `ai/skills/` for patterns and best practices
 * `ai/skills.yaml` as the authoritative skills index
 * `ai/context.yaml` as the authoritative AI context-generation configuration
+* `specs/template/` for inherited template contracts (cloud profile only, read-only)
+* `specs/project/` for host-authored project specs (cloud profile only)
 
 These files are guidance and configuration inputs copied into host repositories.
 They are not executable orchestration logic.
@@ -142,6 +144,34 @@ Only create new files when:
 
 * no equivalent exists
 * or the user explicitly requests it
+
+---
+
+## Skill Trigger Map
+
+The map below is indicative, not exhaustive. If a task does not appear here,
+follow the discovery flow in *Skill Usage*.
+
+| When the task involves… | Consult |
+|---|---|
+| Designing or editing a Python ETL job | `ai/skills/data/etl_patterns.md`, `ai/skills/python/python_project_guidance.md` |
+| Validation or data quality (Python/SQL/AWS) | `ai/skills/data/data_quality_guidance.md`, `ai/skills/data/data_contracts.md` |
+| Python tests | `ai/skills/python/python_testing_quality.md` |
+| New SQL or transformation refactor | `ai/skills/sql/sql_workflow_guidance.md` |
+| AWS Glue (jobs, crawlers, catalog) | `ai/skills/aws/glue_jobs.md` |
+| AWS Lambda | `ai/skills/aws/lambda_functions.md`, `ai/skills/aws/iam_policies.md` |
+| Step Functions orchestration | `ai/skills/aws/step_functions.md` |
+| Scheduling / event-driven | `ai/skills/aws/eventbridge.md` |
+| S3 / data lake storage | `ai/skills/aws/s3_data_lake.md` |
+| AWS logging / observability | `ai/skills/aws/cloudwatch_logging.md` |
+| IAM (policies, roles) | `ai/skills/aws/iam_policies.md`, `ai/skills/terraform/iam_least_privilege.md` |
+| Writing or refactoring Terraform | `ai/skills/terraform/terraform_style.md`, `ai/skills/terraform/modules.md` |
+| Terraform state / backends | `ai/skills/terraform/state_management.md` |
+| Terraform tests / mocks | `ai/skills/terraform/terraform_testing.md`, `ai/skills/terraform/terraform_mocks.md` |
+| Terraform CI/CD | `ai/skills/terraform/terraform_ci_cd.md`, `ai/skills/terraform/terraform_orchestration.md` |
+| Importing existing resources | `ai/skills/terraform/terraform_import_manual.md`, `ai/skills/terraform/terraform_import_discovery.md` |
+| Module refactor / multi-env | `ai/skills/terraform/terraform_refactoring.md`, `ai/skills/terraform/terraform_stacks.md` |
+| Infra security review | `ai/skills/terraform/terraform_security.md` |
 
 ---
 
