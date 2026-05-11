@@ -135,6 +135,12 @@ schema:
     nullable: true
     min_value: 0
     description: Días distintos de licencia sin goce de haber
+  DIAS LIC.  PATE (P):
+    type: integer
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días de licencia de paternidad en el periodo
   SUBS. POR ENFERMEDAD:
     type: float
     nullable: true

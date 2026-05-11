@@ -87,6 +87,12 @@ schema:
     min_value: 0
     precision: 2
     description: Días de licencia sin goce de haber en el periodo
+  DIAS LIC.  PATE (P):
+    type: integer
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días de licencia de paternidad en el periodo
   LICENCIA GOCE HABER:
     type: float
     nullable: true
@@ -196,6 +202,7 @@ column_order_base:
 - DIAS DESC MEDICO (P)
 - DIAS GOCE HABER(D)
 - DIAS DIST.LIC.S.GH
+- DIAS LIC.  PATE (P)
 - LICENCIA GOCE HABER
 - '# HRS EXTRAS SIMP.25%'
 - '# HRS EXTRAS SIMP.35%'
@@ -227,6 +234,7 @@ column_order_final:
 - DIAS DESC MEDICO (P)
 - DIAS GOCE HABER(D)
 - DIAS DIST.LIC.S.GH
+- DIAS LIC.  PATE (P)
 - LICENCIA GOCE HABER
 - '# HRS EXTRAS SIMP.25%'
 - '# HRS EXTRAS SIMP.35%'

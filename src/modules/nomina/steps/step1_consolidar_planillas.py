@@ -156,7 +156,7 @@ def leer_archivo_planilla(archivo_path, periodo):
             valor = cell.value
 
             if valor is not None:
-                encabezado = str(valor).strip()
+                encabezado = re.sub(r"\s+", " ", str(valor).strip())
                 encabezados.append(encabezado)
             else:
                 # Si encontramos 3 columnas vacías consecutivas, terminamos
