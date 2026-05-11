@@ -366,3 +366,95 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ============================================================================
+# FUNCIÓN HEADLESS PARA PIPELINE EXECUTOR
+# ============================================================================
+
+
+def exportar_a_gold(
+    ruta_parquet_silver: Path,
+    carpeta_trabajo: Path,
+    export_excel_gold: bool = False,
+) -> dict:
+    """
+    Procesa Silver → Gold sin interfaz gráfica (modo headless).
+    Usado por el pipeline executor de régimen minero.
+
+    Args:
+        ruta_parquet_silver: Path al parquet Silver de régimen minero
+        carpeta_trabajo: Path a la carpeta de trabajo base
+        export_excel_gold: Si True, genera también Excel
+
+    Returns:
+        dict con resultados del procesamiento
+    """
+    import os
+    import traceback as tb_module
+
+    from src.utils.structured_config import load_structured_data, resolve_structured_path
+
+    print("\n🔄 Procesando Silver → Gold - Régimen Minero (modo headless)...")
+    print(f"   Silver: {ruta_parquet_silver.name}")
+    print(f"   Carpeta trabajo: {carpeta_trabajo}")
+
+    if not os.path.exists(ruta_parquet_silver):
+        raise FileNotFoundError(
+            f"Archivo Silver no encontrado: {ruta_parquet_silver}"
+        )
+
+    try:
+        # 1. Cargar esquema
+        esquema_path = resolve_structured_path("assets/esquemas/esquema_regimen_minero")
+
+        if not esquema_path.exists():
+            raise FileNotFoundError(f"Esquema no encontrado: {esquema_path}")
+
+        esquema = load_structured_data(esquema_path, prefer_resource_path=False)
+        print(f"   ✓ Esquema cargado: v{esquema['metadata']['version']}")
+
+        # 2. Leer datos Silver
+        import polars as pl
+
+        df_silver = pl.read_parquet(ruta_parquet_silver)
+        print(f"   ✓ Silver cargado: {len(df_silver):,} registros")
+
+        # 3. Transformar a Gold
+        df_gold = aplicar_transformaciones_gold(df_silver, esquema)
+        df_gold = agregar_nombre_mes(df_gold)
+        print(f"   ✓ Transformaciones aplicadas: {len(df_gold):,} registros")
+
+        # 4. Preparar carpeta gold
+        carpeta_actual = gestionar_versionamiento_gold(carpeta_trabajo)
+
+        # 5. Guardar parquet
+        ruta_parquet_gold = carpeta_actual / "Planilla Metso - Regimen Minero.parquet"
+        df_gold.write_parquet(ruta_parquet_gold)
+        print(f"   ✓ Parquet gold: {ruta_parquet_gold.name}")
+
+        # 6. Guardar Excel (opcional)
+        ruta_excel_gold = carpeta_actual / "Planilla Metso - Regimen Minero.xlsx"
+        ruta_excel_gold = maybe_write_excel(
+            ruta_excel_gold,
+            export_excel_gold,
+            lambda path: generar_excel_visualizacion(df_gold, path),
+        )
+        if ruta_excel_gold is not None:
+            print(f"   ✓ Excel gold: {ruta_excel_gold.name}")
+        else:
+            print("   ℹ️ Excel gold omitido (exportación opcional desactivada)")
+
+        return {
+            "success": True,
+            "parquet": ruta_parquet_gold,
+            "excel": ruta_excel_gold,
+            "carpeta_actual": carpeta_actual,
+            "registros": len(df_gold),
+            "columnas": len(df_gold.columns),
+        }
+
+    except Exception as e:
+        print(f"   ✗ Error: {e}")
+        tb_module.print_exc()
+        raise

@@ -249,6 +249,18 @@ def consolidar_archivos(archivos, carpeta_trabajo):
 
     print("  ✓ Columnas MES y AÑO generadas exitosamente")
 
+    # Guardar en Silver para que el pipeline pueda encadenar el siguiente stage
+    print("\n[3/3] Guardando resultados en capa Silver...")
+    try:
+        ruta_parquet = guardar_resultados(df_consolidado, carpeta_trabajo)
+        if not ruta_parquet.exists():
+            raise FileNotFoundError(f"No se pudo crear el archivo Parquet: {ruta_parquet}")
+    except Exception as e:
+        print(f"  ✗ ERROR al guardar resultados: {e}")
+        import traceback as _tb
+        _tb.print_exc()
+        raise
+
     return df_consolidado
 
 

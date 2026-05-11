@@ -1,0 +1,47 @@
+name: "Régimen Minero con Licencias"
+description: "Pipeline completo: Régimen Minero + Licencias → Silver → Gold Enriquecido"
+version: "1.0.0"
+
+config:
+  log_dir: "logs"
+  stop_on_error: true
+
+stages:
+  - name: "Régimen Minero Bronze → Silver"
+    description: "Consolidación de planillas Régimen Minero a Parquet Silver"
+    module: "src.modules.nomina_regimen_minero.steps.step1_consolidar_regimen_minero"
+    function: "consolidar_archivos"
+    outputs:
+      - name: "parquet_regimen_minero_silver"
+        path_template: "${output_dir}/silver/Planilla Metso Consolidado - Regimen Minero.parquet"
+        required: true
+
+  - name: "Licencias Bronze → Silver"
+    description: "Procesamiento de licencias a Parquet Silver"
+    module: "src.modules.licencias.steps.step1_consolidar_licencias"
+    function: "procesar_sin_gui"
+    outputs:
+      - name: "parquet_licencias_silver"
+        path_template: "${output_dir}/silver/licencias_consolidadas.parquet"
+        required: true
+
+  - name: "Régimen Minero Silver → Gold"
+    description: "Transformación de Silver a Gold"
+    module: "src.modules.nomina_regimen_minero.steps.step2_exportar_regimen_minero"
+    function: "exportar_a_gold"
+    outputs:
+      - name: "parquet_regimen_minero_gold"
+        path_template: "${output_dir}/gold/actual/Planilla Metso - Regimen Minero.parquet"
+        required: true
+
+  - name: "Enriquecimiento con Licencias"
+    description: "Agregar columnas de licencias a Gold de Régimen Minero"
+    module: "src.modules.licencias.steps.step2_enriquecer_nomina"
+    function: "procesar_sin_gui"
+    outputs:
+      - name: "parquet_regimen_minero_con_licencias"
+        path_template: "${output_dir}/gold/actual/Planillas Metso - Regimen Minero con licencias.parquet"
+        required: true
+      - name: "excel_regimen_minero_con_licencias"
+        path_template: "${output_dir}/gold/actual/Planillas Metso - Regimen Minero con licencias.xlsx"
+        required: false

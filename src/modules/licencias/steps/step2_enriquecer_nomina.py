@@ -269,6 +269,7 @@ def procesar_sin_gui(
     ruta_nomina: Path,
     ruta_licencias: Path,
     export_excel_gold: bool = False,
+    nombre_output: str = "Planilla_Metso_BI_Gold_Con_Licencias",
 ) -> dict:
     """
     Enriquece nómina Gold con licencias sin interfaz gráfica (modo headless)
@@ -353,7 +354,7 @@ def procesar_sin_gui(
             print("   ℹ️ Excel omitido (exportación opcional desactivada)")
 
         # Archivo BI con nombre dedicado para Power BI / consumo externo
-        nombre_bi = "Planilla_Metso_BI_Gold_Con_Licencias"
+        nombre_bi = nombre_output
         ruta_parquet_bi = carpeta_actual / f"{nombre_bi}.parquet"
         df_enriquecido.write_parquet(ruta_parquet_bi, compression="snappy")
         print(f"   ✓ Gold BI generado: {ruta_parquet_bi.name}")
