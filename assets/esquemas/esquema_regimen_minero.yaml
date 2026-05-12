@@ -87,7 +87,7 @@ schema:
     min_value: 0
     precision: 2
     description: Días de licencia sin goce de haber en el periodo
-  DIAS LIC.  PATE (P):
+  DIAS LIC. PATE (P):
     type: integer
     nullable: true
     min_value: 0
