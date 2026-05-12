@@ -141,6 +141,12 @@ schema:
     min_value: 0
     precision: 2
     description: Días de licencia de paternidad en el periodo
+  DESCANSO MEDICO:
+    type: float
+    nullable: true
+    min_value: 0
+    precision: 2
+    description: Días de descanso médico en el periodo
   SUBS. POR ENFERMEDAD:
     type: float
     nullable: true
